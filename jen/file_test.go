@@ -6,7 +6,6 @@ import (
 )
 
 func TestGuessAlias(t *testing.T) {
-
 	data := map[string]string{
 		"A":             "a",
 		"a":             "a",

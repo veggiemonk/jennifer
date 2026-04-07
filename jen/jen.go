@@ -24,7 +24,7 @@ func (f *File) Save(filename string) error {
 	if err := f.Render(buf); err != nil {
 		return err
 	}
-	if err := os.WriteFile(filename, buf.Bytes(), 0644); err != nil {
+	if err := os.WriteFile(filename, buf.Bytes(), 0o644); err != nil {
 		return err
 	}
 	return nil
@@ -94,7 +94,6 @@ func (f *File) Render(w io.Writer) error {
 }
 
 func (f *File) renderImports(source io.Writer) error {
-
 	// Render the "C" import if it's been used in a `Qual`, `Anon` or if there's a preamble comment
 	hasCgo := f.imports["C"].name != "" || len(f.cgoPreamble) > 0
 
@@ -144,7 +143,6 @@ func (f *File) renderImports(source io.Writer) error {
 				if _, err := fmt.Fprintf(source, "%s %s\n", def.name, strconv.Quote(path)); err != nil {
 					return err
 				}
-
 			} else {
 				if _, err := fmt.Fprintf(source, "%s\n", strconv.Quote(path)); err != nil {
 					return err

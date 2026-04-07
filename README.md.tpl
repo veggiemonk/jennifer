@@ -1,4 +1,4 @@
-[![docs](https://pkg.go.dev/badge/github.com/dave/jennifer/jen.svg)](https://pkg.go.dev/github.com/dave/jennifer/jen)
+[![docs](https://pkg.go.dev/badge/github.com/veggiemonk/jennifer/jen.svg)](https://pkg.go.dev/github.com/veggiemonk/jennifer/jen)
 ![stability-stable](https://img.shields.io/badge/stability-stable-brightgreen.svg)
 
 # Jennifer
@@ -10,7 +10,7 @@ package main
 import (
     "fmt"
 
-    . "github.com/dave/jennifer/jen"
+    . "github.com/veggiemonk/jennifer/jen"
 )
 
 func main() {{ "ExampleNewFile" | code }}
@@ -22,7 +22,7 @@ Output:
 
 ### Install
 ```
-go get -u github.com/dave/jennifer/jen
+go get -u github.com/veggiemonk/jennifer/jen
 ```
 
 ### Need help?
@@ -31,7 +31,7 @@ chat: I'm happy to help! Feel free to open an issue, email me or mention @dave
 in your PR.
 
 ### Examples
-Jennifer has a comprehensive suite of examples - see [godoc](https://godoc.org/github.com/dave/jennifer/jen#pkg-examples) for an index. Here's some examples of jennifer being used in the real-world:
+Jennifer has a comprehensive suite of examples - see [godoc](https://godoc.org/github.com/veggiemonk/jennifer/jen#pkg-examples) for an index. Here's some examples of jennifer being used in the real-world:
 
 * [genjen](genjen/render.go) (which generates much of jennifer, using data in [data.go](genjen/data.go))
 * [zerogen](https://github.com/mrsinham/zerogen/blob/master/generator.go)
@@ -50,10 +50,10 @@ preferred.
 # Identifiers
 **Identifiers** [Keywords](#keywords) [Operators](#operators) [Braces](#braces) [Parentheses](#parentheses) [Control flow](#control-flow) [Collections](#collections) [Literals](#literals) [Comments](#comments) [Generics](#generics) [Helpers](#helpers) [Misc](#misc) [File](#file)
 
-### Id
-{{ "Id" | doc }}
+### ID
+{{ "ID" | doc }}
 
-{{ "ExampleId" | example }}
+{{ "ExampleID" | example }}
 
 ### Dot
 {{ "Dot" | doc }}
@@ -316,10 +316,10 @@ emit the approximation (`~`) token, use `Op("~")`.
 
 ### Examples
 
-{{ "ExampleGenericsTypesDefinition" | example }}
-{{ "ExampleGenericsTypesUsage" | example }}
-{{ "ExampleGenericsUnion" | example }}
-{{ "ExampleGenericsApproximate" | example }}
+{{ "ExampleTypes_definition" | example }}
+{{ "ExampleTypes_usage" | example }}
+{{ "ExampleUnion" | example }}
+{{ "ExampleOp_approximate" | example }}
 
 # Helpers
 [Identifiers](#identifiers) [Keywords](#keywords) [Operators](#operators) [Braces](#braces) [Parentheses](#parentheses) [Control flow](#control-flow) [Collections](#collections) [Literals](#literals) [Comments](#comments) [Generics](#generics) **Helpers** [Misc](#misc) [File](#file)
@@ -374,7 +374,7 @@ Be careful when passing *Statement. Consider the following...
 
 {{ "ExampleStatement_Clone_broken" | example }}
 
-Id("a") returns a *Statement, which the Call() method appends to twice. To
+ID("a") returns a *Statement, which the Call() method appends to twice. To
 avoid this, use Clone. {{ "Statement.Clone" | doc }}
 
 {{ "ExampleStatement_Clone_fixed" | example }}
@@ -436,7 +436,7 @@ the import is separated, and preceded by the preamble.
 
 {{ "File.CanonicalPath" | doc }}
 
-{{ "ExampleFile_HeaderAndPackageComments" | example }}
+{{ "ExampleFile_HeaderComment_withPackageComment" | example }}
 
 {{ "File.CgoPreamble" | doc }}
 

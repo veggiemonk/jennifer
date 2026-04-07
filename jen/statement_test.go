@@ -4,14 +4,14 @@ import (
 	"bytes"
 	"testing"
 
-	. "github.com/dave/jennifer/jen"
+	. "github.com/veggiemonk/jennifer/jen"
 )
 
 func TestStatement_Render(t *testing.T) {
 	file := NewFile("main")
 	file.ImportAlias("fmt", "fmtalias")
 
-	statement := file.Func().Id("main").Params().Block(
+	statement := file.Func().ID("main").Params().Block(
 		Qual("fmt", "Println").Call(Lit("something")),
 	)
 

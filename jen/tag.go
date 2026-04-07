@@ -39,7 +39,6 @@ func (t tag) isNull(f *File) bool {
 }
 
 func (t tag) render(f *File, w io.Writer, s *Statement) error {
-
 	if t.isNull(f) {
 		// notest
 		// render won't be called if t is null

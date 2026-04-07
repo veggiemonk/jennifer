@@ -67,7 +67,7 @@ func (d Dict) render(f *File, w io.Writer, s *Statement) error {
 }
 
 func (d Dict) isNull(f *File) bool {
-	if d == nil || len(d) == 0 {
+	if len(d) == 0 {
 		return true
 	}
 	for k, v := range d {

@@ -1,4 +1,4 @@
-[![docs](https://pkg.go.dev/badge/github.com/dave/jennifer/jen.svg)](https://pkg.go.dev/github.com/dave/jennifer/jen)
+[![docs](https://pkg.go.dev/badge/github.com/veggiemonk/jennifer/jen.svg)](https://pkg.go.dev/github.com/veggiemonk/jennifer/jen)
 ![stability-stable](https://img.shields.io/badge/stability-stable-brightgreen.svg)
 
 # Jennifer
@@ -10,12 +10,12 @@ package main
 import (
     "fmt"
 
-    . "github.com/dave/jennifer/jen"
+    . "github.com/veggiemonk/jennifer/jen"
 )
 
 func main() {
 	f := NewFile("main")
-	f.Func().Id("main").Params().Block(
+	f.Func().ID("main").Params().Block(
 		Qual("fmt", "Println").Call(Lit("Hello, world")),
 	)
 	fmt.Printf("%#v", f)
@@ -34,7 +34,7 @@ func main() {
 
 ### Install
 ```
-go get -u github.com/dave/jennifer/jen
+go get -u github.com/veggiemonk/jennifer/jen
 ```
 
 ### Need help?
@@ -43,7 +43,7 @@ chat: I'm happy to help! Feel free to open an issue, email me or mention @dave
 in your PR.
 
 ### Examples
-Jennifer has a comprehensive suite of examples - see [godoc](https://godoc.org/github.com/dave/jennifer/jen#pkg-examples) for an index. Here's some examples of jennifer being used in the real-world:
+Jennifer has a comprehensive suite of examples - see [godoc](https://godoc.org/github.com/veggiemonk/jennifer/jen#pkg-examples) for an index. Here's some examples of jennifer being used in the real-world:
 
 * [genjen](genjen/render.go) (which generates much of jennifer, using data in [data.go](genjen/data.go))
 * [zerogen](https://github.com/mrsinham/zerogen/blob/master/generator.go)
@@ -54,7 +54,7 @@ For testing, a File or Statement can be rendered with the fmt package
 using the %#v verb.
 
 ```go
-c := Id("a").Call(Lit("b"))
+c := ID("a").Call(Lit("b"))
 fmt.Printf("%#v", c)
 // Output:
 // a("b")
@@ -67,12 +67,12 @@ preferred.
 # Identifiers
 **Identifiers** [Keywords](#keywords) [Operators](#operators) [Braces](#braces) [Parentheses](#parentheses) [Control flow](#control-flow) [Collections](#collections) [Literals](#literals) [Comments](#comments) [Generics](#generics) [Helpers](#helpers) [Misc](#misc) [File](#file)
 
-### Id
-Id renders an identifier.
+### ID
+ID renders an identifier.
 
 ```go
-c := If(Id("i").Op("==").Id("j")).Block(
-	Return(Id("i")),
+c := If(ID("i").Op("==").ID("j")).Block(
+	Return(ID("i")),
 )
 fmt.Printf("%#v", c)
 // Output:
@@ -107,7 +107,7 @@ omitted. If package names conflict they are automatically renamed.
 
 ```go
 f := NewFilePath("a.b/c")
-f.Func().Id("init").Params().Block(
+f.Func().ID("init").Params().Block(
 	Qual("a.b/c", "Foo").Call().Comment("Local package - name is omitted."),
 	Qual("d.e/f", "Bar").Call().Comment("Import is automatically added."),
 	Qual("g.h/f", "Baz").Call().Comment("Colliding package name is renamed."),
@@ -139,7 +139,7 @@ need to be aliased. If more control is needed of the aliases, see
 List renders a comma separated list. Use for multiple return functions.
 
 ```go
-c := List(Id("a"), Err()).Op(":=").Id("b").Call()
+c := List(ID("a"), Err()).Op(":=").ID("b").Call()
 fmt.Printf("%#v", c)
 // Output:
 // a, err := b()
@@ -162,7 +162,7 @@ explanatory:
 Built-in functions take a list of parameters and render them appropriately:
 
 ```go
-c := Id("a").Op("=").Append(Id("a"), Id("b").Op("..."))
+c := ID("a").Op("=").Append(ID("a"), ID("b").Op("..."))
 fmt.Printf("%#v", c)
 // Output:
 // a = append(a, b...)
@@ -176,28 +176,28 @@ Special cases for [If, For](#if-for), [Interface, Struct](#interface-struct), [S
 Op renders the provided operator / token.
 
 ```go
-c := Id("a").Op(":=").Id("b").Call()
+c := ID("a").Op(":=").ID("b").Call()
 fmt.Printf("%#v", c)
 // Output:
 // a := b()
 ```
 
 ```go
-c := Id("a").Op("=").Op("*").Id("b")
+c := ID("a").Op("=").Op("*").ID("b")
 fmt.Printf("%#v", c)
 // Output:
 // a = *b
 ```
 
 ```go
-c := Id("a").Call(Id("b").Op("..."))
+c := ID("a").Call(ID("b").Op("..."))
 fmt.Printf("%#v", c)
 // Output:
 // a(b...)
 ```
 
 ```go
-c := If(Parens(Id("a").Op("||").Id("b")).Op("&&").Id("c")).Block()
+c := If(Parens(ID("a").Op("||").ID("b")).Op("&&").ID("c")).Block()
 fmt.Printf("%#v", c)
 // Output:
 // if (a || b) && c {
@@ -220,10 +220,10 @@ Several methods render curly braces, summarized below:
 Block renders a statement list enclosed by curly braces. Use for code blocks.
 
 ```go
-c := Func().Id("foo").Params().String().Block(
-	Id("a").Op("=").Id("b"),
-	Id("b").Op("++"),
-	Return(Id("b")),
+c := Func().ID("foo").Params().String().Block(
+	ID("a").Op("=").ID("b"),
+	ID("b").Op("++"),
+	Return(ID("b")),
 )
 fmt.Printf("%#v", c)
 // Output:
@@ -235,8 +235,8 @@ fmt.Printf("%#v", c)
 ```
 
 ```go
-c := If(Id("a").Op(">").Lit(10)).Block(
-	Id("a").Op("=").Id("a").Op("/").Lit(2),
+c := If(ID("a").Op(">").Lit(10)).Block(
+	ID("a").Op("=").ID("a").Op("/").Lit(2),
 )
 fmt.Printf("%#v", c)
 // Output:
@@ -252,15 +252,15 @@ Interface and Struct render the keyword followed by a statement list enclosed
 by curly braces.
 
 ```go
-c := Var().Id("a").Interface()
+c := Var().ID("a").Interface()
 fmt.Printf("%#v", c)
 // Output:
 // var a interface{}
 ```
 
 ```go
-c := Type().Id("a").Interface(
-	Id("b").Params().String(),
+c := Type().ID("a").Interface(
+	ID("b").Params().String(),
 )
 fmt.Printf("%#v", c)
 // Output:
@@ -270,16 +270,16 @@ fmt.Printf("%#v", c)
 ```
 
 ```go
-c := Id("c").Op(":=").Make(Chan().Struct())
+c := ID("c").Op(":=").Make(Chan().Struct())
 fmt.Printf("%#v", c)
 // Output:
 // c := make(chan struct{})
 ```
 
 ```go
-c := Type().Id("foo").Struct(
-	List(Id("x"), Id("y")).Int(),
-	Id("u").Float32(),
+c := Type().ID("foo").Struct(
+	List(ID("x"), ID("y")).Int(),
+	ID("u").Float32(),
 )
 fmt.Printf("%#v", c)
 // Output:
@@ -308,8 +308,8 @@ Call renders a comma separated list enclosed by parenthesis. Use for function ca
 ```go
 c := Qual("fmt", "Printf").Call(
 	Lit("%#v: %T\n"),
-	Id("a"),
-	Id("b"),
+	ID("a"),
+	ID("b"),
 )
 fmt.Printf("%#v", c)
 // Output:
@@ -321,12 +321,12 @@ Params renders a comma separated list enclosed by parenthesis. Use for function 
 
 ```go
 c := Func().Params(
-	Id("a").Id("A"),
-).Id("foo").Params(
-	Id("b"),
-	Id("c").String(),
+	ID("a").ID("A"),
+).ID("foo").Params(
+	ID("b"),
+	ID("c").String(),
 ).String().Block(
-	Return(Id("b").Op("+").Id("c")),
+	Return(ID("b").Op("+").ID("c")),
 )
 fmt.Printf("%#v", c)
 // Output:
@@ -340,8 +340,8 @@ Defs renders a statement list enclosed in parenthesis. Use for definition lists.
 
 ```go
 c := Const().Defs(
-	Id("a").Op("=").Lit("a"),
-	Id("b").Op("=").Lit("b"),
+	ID("a").Op("=").Lit("a"),
+	ID("b").Op("=").Lit("b"),
 )
 fmt.Printf("%#v", c)
 // Output:
@@ -355,14 +355,14 @@ fmt.Printf("%#v", c)
 Parens renders a single item in parenthesis. Use for type conversion or to specify evaluation order.
 
 ```go
-c := Id("b").Op(":=").Index().Byte().Parens(Id("s"))
+c := ID("b").Op(":=").Index().Byte().Parens(ID("s"))
 fmt.Printf("%#v", c)
 // Output:
 // b := []byte(s)
 ```
 
 ```go
-c := Id("a").Op("/").Parens(Id("b").Op("+").Id("c"))
+c := ID("a").Op("/").Parens(ID("b").Op("+").ID("c"))
 fmt.Printf("%#v", c)
 // Output:
 // a / (b + c)
@@ -372,7 +372,7 @@ fmt.Printf("%#v", c)
 Assert renders a period followed by a single item enclosed by parenthesis. Use for type assertions.
 
 ```go
-c := List(Id("b"), Id("ok")).Op(":=").Id("a").Assert(Bool())
+c := List(ID("b"), ID("ok")).Op(":=").ID("a").Assert(Bool())
 fmt.Printf("%#v", c)
 // Output:
 // b, ok := a.(bool)
@@ -386,7 +386,7 @@ If and For render the keyword followed by a semicolon separated list.
 
 ```go
 c := If(
-	Err().Op(":=").Id("a").Call(),
+	Err().Op(":=").ID("a").Call(),
 	Err().Op("!=").Nil(),
 ).Block(
 	Return(Err()),
@@ -400,11 +400,11 @@ fmt.Printf("%#v", c)
 
 ```go
 c := For(
-	Id("i").Op(":=").Lit(0),
-	Id("i").Op("<").Lit(10),
-	Id("i").Op("++"),
+	ID("i").Op(":=").Lit(0),
+	ID("i").Op("<").Lit(10),
+	ID("i").Op("++"),
 ).Block(
-	Qual("fmt", "Println").Call(Id("i")),
+	Qual("fmt", "Println").Call(ID("i")),
 )
 fmt.Printf("%#v", c)
 // Output:
@@ -417,7 +417,7 @@ fmt.Printf("%#v", c)
 Switch, Select, Case and Block are used to build switch or select statements:
 
 ```go
-c := Switch(Id("value").Dot("Kind").Call()).Block(
+c := Switch(ID("value").Dot("Kind").Call()).Block(
 	Case(Qual("reflect", "Float32"), Qual("reflect", "Float64")).Block(
 		Return(Lit("float")),
 	),
@@ -449,7 +449,7 @@ fmt.Printf("%#v", c)
 Return renders the keyword followed by a comma separated list.
 
 ```go
-c := Return(Id("a"), Id("b"))
+c := Return(ID("a"), ID("b"))
 fmt.Printf("%#v", c)
 // Output:
 // return a, b
@@ -462,7 +462,7 @@ fmt.Printf("%#v", c)
 Map renders the keyword followed by a single item enclosed by square brackets. Use for map definitions.
 
 ```go
-c := Id("a").Op(":=").Map(String()).String().Values()
+c := ID("a").Op(":=").Map(String()).String().Values()
 fmt.Printf("%#v", c)
 // Output:
 // a := map[string]string{}
@@ -472,21 +472,21 @@ fmt.Printf("%#v", c)
 Index renders a colon separated list enclosed by square brackets. Use for array / slice indexes and definitions.
 
 ```go
-c := Var().Id("a").Index().String()
+c := Var().ID("a").Index().String()
 fmt.Printf("%#v", c)
 // Output:
 // var a []string
 ```
 
 ```go
-c := Id("a").Op(":=").Id("b").Index(Lit(0), Lit(1))
+c := ID("a").Op(":=").ID("b").Index(Lit(0), Lit(1))
 fmt.Printf("%#v", c)
 // Output:
 // a := b[0:1]
 ```
 
 ```go
-c := Id("a").Op(":=").Id("b").Index(Lit(1), Empty())
+c := ID("a").Op(":=").ID("b").Index(Lit(1), Empty())
 fmt.Printf("%#v", c)
 // Output:
 // a := b[1:]
@@ -519,9 +519,9 @@ fmt.Printf("%#v", c)
 ```
 
 ```go
-c := Op("&").Id("Person").Values(Dict{
-	Id("Age"):	Lit(1),
-	Id("Name"):	Lit("a"),
+c := Op("&").ID("Person").Values(Dict{
+	ID("Age"):	Lit(1),
+	ID("Name"):	Lit("a"),
 })
 fmt.Printf("%#v", c)
 // Output:
@@ -534,7 +534,7 @@ fmt.Printf("%#v", c)
 DictFunc executes a func(Dict) to generate the value.
 
 ```go
-c := Id("a").Op(":=").Map(String()).String().Values(DictFunc(func(d Dict) {
+c := ID("a").Op(":=").Map(String()).String().Values(DictFunc(func(d Dict) {
 	d[Lit("a")] = Lit("b")
 	d[Lit("c")] = Lit("d")
 }))
@@ -557,14 +557,14 @@ float32, int8, int16, int32, int64, uint, uint8, uint16, uint32, uint64, uintptr
 Passing any other type will panic.
 
 ```go
-c := Id("a").Op(":=").Lit("a")
+c := ID("a").Op(":=").Lit("a")
 fmt.Printf("%#v", c)
 // Output:
 // a := "a"
 ```
 
 ```go
-c := Id("a").Op(":=").Lit(1.5)
+c := ID("a").Op(":=").Lit(1.5)
 fmt.Printf("%#v", c)
 // Output:
 // a := 1.5
@@ -574,7 +574,7 @@ LitFunc generates the value to render by executing the provided
 function.
 
 ```go
-c := Id("a").Op(":=").LitFunc(func() interface{} { return 1 + 1 })
+c := ID("a").Op(":=").LitFunc(func() any { return 1 + 1 })
 fmt.Printf("%#v", c)
 // Output:
 // a := 2
@@ -619,7 +619,7 @@ comment is formatted in multiline style.
 ```go
 f := NewFile("a")
 f.Comment("Foo returns the string \"foo\"")
-f.Func().Id("Foo").Params().String().Block(
+f.Func().ID("Foo").Params().String().Block(
 	Return(Lit("foo")).Comment("return the string foo"),
 )
 fmt.Printf("%#v", f)
@@ -647,7 +647,7 @@ with "//" or "/*", the automatic formatting is disabled and the string is
 rendered directly.
 
 ```go
-c := Id("foo").Call(Comment("/* inline */")).Comment("//no-space")
+c := ID("foo").Call(Comment("/* inline */")).Comment("//no-space")
 fmt.Printf("%#v", c)
 // Output:
 // foo( /* inline */ ) //no-space
@@ -659,7 +659,7 @@ Commentf adds a comment, using a format string and a list of parameters.
 ```go
 name := "foo"
 val := "bar"
-c := Id(name).Op(":=").Lit(val).Commentf("%s is the string \"%s\"", name, val)
+c := ID(name).Op(":=").Lit(val).Commentf("%s is the string \"%s\"", name, val)
 fmt.Printf("%#v", c)
 // Output:
 // foo := "bar" // foo is the string "bar"
@@ -684,24 +684,24 @@ Union renders a pipe separated list. Use for union type constraints.
 ### Examples
 
 ```go
-c := Func().Id("Keys").Types(
-	Id("K").Comparable(),
-	Id("V").Any(),
+c := Func().ID("Keys").Types(
+	ID("K").Comparable(),
+	ID("V").Any(),
 ).Params(
-	Id("m").Map(Id("K")).Id("V"),
-).Index().Id("K").Block()
+	ID("m").Map(ID("K")).ID("V"),
+).Index().ID("K").Block()
 fmt.Printf("%#v", c)
 // Output:
 // func Keys[K comparable, V any](m map[K]V) []K {}
 ```
 ```go
-c := Return(Id("Keys").Types(Int(), String()).Call(Id("m")))
+c := Return(ID("Keys").Types(Int(), String()).Call(ID("m")))
 fmt.Printf("%#v", c)
 // Output:
 // return Keys[int, string](m)
 ```
 ```go
-c := Type().Id("PredeclaredSignedInteger").Interface(
+c := Type().ID("PredeclaredSignedInteger").Interface(
 	Union(Int(), Int8(), Int16(), Int32(), Int64()),
 )
 fmt.Printf("%#v", c)
@@ -711,7 +711,7 @@ fmt.Printf("%#v", c)
 // }
 ```
 ```go
-c := Type().Id("AnyString").Interface(
+c := Type().ID("AnyString").Interface(
 	Op("~").String(),
 )
 fmt.Printf("%#v", c)
@@ -729,7 +729,7 @@ All constructs that accept a variadic list of items are paired with GroupFunc
 functions that accept a func(*Group). Use for embedding logic.
 
 ```go
-c := Id("numbers").Op(":=").Index().Int().ValuesFunc(func(g *Group) {
+c := ID("numbers").Op(":=").Index().Int().ValuesFunc(func(g *Group) {
 	for i := 0; i <= 5; i++ {
 		g.Lit(i)
 	}
@@ -742,12 +742,12 @@ fmt.Printf("%#v", c)
 ```go
 increment := true
 name := "a"
-c := Func().Id("a").Params().BlockFunc(func(g *Group) {
-	g.Id(name).Op("=").Lit(1)
+c := Func().ID("a").Params().BlockFunc(func(g *Group) {
+	g.ID(name).Op("=").Lit(1)
 	if increment {
-		g.Id(name).Op("++")
+		g.ID(name).Op("++")
 	} else {
-		g.Id(name).Op("--")
+		g.ID(name).Op("--")
 	}
 })
 fmt.Printf("%#v", c)
@@ -763,14 +763,14 @@ Add appends the provided items to the statement.
 
 ```go
 ptr := Op("*")
-c := Id("a").Op("=").Add(ptr).Id("b")
+c := ID("a").Op("=").Add(ptr).ID("b")
 fmt.Printf("%#v", c)
 // Output:
 // a = *b
 ```
 
 ```go
-a := Id("a")
+a := ID("a")
 i := Int()
 c := Var().Add(a, i)
 fmt.Printf("%#v", c)
@@ -784,7 +784,7 @@ embedding logic.
 
 ```go
 f := func(name string, isMap bool) *Statement {
-	return Id(name).Op(":=").Do(func(s *Statement) {
+	return ID(name).Op(":=").Do(func(s *Statement) {
 		if isMap {
 			s.Map(String()).String()
 		} else {
@@ -805,9 +805,9 @@ fmt.Printf("%#v\n%#v", f("a", true), f("b", false))
 Tag renders a struct tag
 
 ```go
-c := Type().Id("foo").Struct(
-	Id("A").String().Tag(map[string]string{"json": "a"}),
-	Id("B").Int().Tag(map[string]string{"json": "b", "bar": "baz"}),
+c := Type().ID("foo").Struct(
+	ID("A").String().Tag(map[string]string{"json": "a"}),
+	ID("B").Int().Tag(map[string]string{"json": "b", "bar": "baz"}),
 )
 fmt.Printf("%#v", c)
 // Output:
@@ -826,11 +826,11 @@ separator in lists.
 In lists, nil will produce the same effect.
 
 ```go
-c := Func().Id("foo").Params(
+c := Func().ID("foo").Params(
 	nil,
-	Id("s").String(),
+	ID("s").String(),
 	Null(),
-	Id("i").Int(),
+	ID("i").Int(),
 ).Block()
 fmt.Printf("%#v", c)
 // Output:
@@ -842,7 +842,7 @@ Empty adds an empty item. Empty items render nothing but are followed by a
 separator in lists.
 
 ```go
-c := Id("a").Op(":=").Id("b").Index(Lit(1), Empty())
+c := ID("a").Op(":=").ID("b").Index(Lit(1), Empty())
 fmt.Printf("%#v", c)
 // Output:
 // a := b[1:]
@@ -855,7 +855,7 @@ Line inserts a blank line.
 Be careful when passing *Statement. Consider the following...
 
 ```go
-a := Id("a")
+a := ID("a")
 c := Block(
 	a.Call(),
 	a.Call(),
@@ -868,12 +868,12 @@ fmt.Printf("%#v", c)
 // }
 ```
 
-Id("a") returns a *Statement, which the Call() method appends to twice. To
+ID("a") returns a *Statement, which the Call() method appends to twice. To
 avoid this, use Clone. Clone makes a copy of the Statement, so further tokens can be appended
 without affecting the original.
 
 ```go
-a := Id("a")
+a := ID("a")
 c := Block(
 	a.Clone().Call(),
 	a.Clone().Call(),
@@ -901,10 +901,10 @@ void myprint(char* s) {
 printf("%s\n", s);
 }
 `)
-f.Func().Id("init").Params().Block(
-	Id("cs").Op(":=").Qual("C", "CString").Call(Lit("Hello from stdio\n")),
-	Qual("C", "myprint").Call(Id("cs")),
-	Qual("C", "free").Call(Qual("unsafe", "Pointer").Parens(Id("cs"))),
+f.Func().ID("init").Params().Block(
+	ID("cs").Op(":=").Qual("C", "CString").Call(Lit("Hello from stdio\n")),
+	Qual("C", "myprint").Call(ID("cs")),
+	Qual("C", "free").Call(Qual("unsafe", "Pointer").Parens(ID("cs"))),
 )
 fmt.Printf("%#v", f)
 // Output:
@@ -947,7 +947,7 @@ NewFilePathName creates a new file with the specified package path and name.
 
 ```go
 f := NewFilePathName("a.b/c", "main")
-f.Func().Id("main").Params().Block(
+f.Func().ID("main").Params().Block(
 	Qual("a.b/c", "Foo").Call(),
 )
 fmt.Printf("%#v", f)
@@ -967,7 +967,7 @@ Render renders the file to the provided writer.
 
 ```go
 f := NewFile("a")
-f.Func().Id("main").Params().Block()
+f.Func().ID("main").Params().Block()
 buf := &bytes.Buffer{}
 err := f.Render(buf)
 if err != nil {
@@ -987,7 +987,7 @@ Anon adds an anonymous import.
 ```go
 f := NewFile("c")
 f.Anon("a")
-f.Func().Id("init").Params().Block()
+f.Func().ID("init").Params().Block()
 fmt.Printf("%#v", f)
 // Output:
 // package c
@@ -1011,7 +1011,7 @@ f.ImportName("github.com/foo/a", "a")
 // package b is not used in the code so will not be included
 f.ImportName("github.com/foo/b", "b")
 
-f.Func().Id("main").Params().Block(
+f.Func().ID("main").Params().Block(
 	Qual("github.com/foo/a", "A").Call(),
 )
 fmt.Printf("%#v", f)
@@ -1043,7 +1043,7 @@ f.ImportAlias("github.com/foo/a", "b")
 // package c is not used in the code so will not be included
 f.ImportAlias("github.com/foo/c", "c")
 
-f.Func().Id("main").Params().Block(
+f.Func().ID("main").Params().Block(
 	Qual("github.com/foo/a", "A").Call(),
 )
 fmt.Printf("%#v", f)
@@ -1073,7 +1073,7 @@ f := NewFile("c")
 f.CanonicalPath = "d.e/f"
 f.HeaderComment("Code generated by...")
 f.PackageComment("Package c implements...")
-f.Func().Id("init").Params().Block()
+f.Func().ID("init").Params().Block()
 fmt.Printf("%#v", f)
 // Output:
 // // Code generated by...
@@ -1094,7 +1094,7 @@ can set a prefix here. Package foo becomes {prefix}_foo.
 ```go
 f := NewFile("a")
 f.PackagePrefix = "pkg"
-f.Func().Id("main").Params().Block(
+f.Func().ID("main").Params().Block(
 	Qual("b.c/d", "E").Call(),
 )
 fmt.Printf("%#v", f)

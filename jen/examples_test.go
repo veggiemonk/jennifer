@@ -4,18 +4,18 @@ import (
 	"bytes"
 	"fmt"
 
-	. "github.com/dave/jennifer/jen"
+	. "github.com/veggiemonk/jennifer/jen"
 )
 
-func ExampleGenericsTypesFuncEmpty() {
-	c := Func().Id("F").TypesFunc(func(group *Group) {}).Params().Block()
+func ExampleTypesFunc_empty() {
+	c := Func().ID("F").TypesFunc(func(group *Group) {}).Params().Block()
 	fmt.Printf("%#v", c)
 	// Output:
 	// func F() {}
 }
 
-func ExampleGenericsTypesFuncNull() {
-	c := Func().Id("F").TypesFunc(func(group *Group) {
+func ExampleTypesFunc_null() {
+	c := Func().ID("F").TypesFunc(func(group *Group) {
 		group.Null()
 	}).Params().Block()
 	fmt.Printf("%#v", c)
@@ -23,41 +23,41 @@ func ExampleGenericsTypesFuncNull() {
 	// func F() {}
 }
 
-func ExampleGenericsTypesEmpty() {
-	c := Func().Id("F").Types().Params().Block()
+func ExampleTypes_empty() {
+	c := Func().ID("F").Types().Params().Block()
 	fmt.Printf("%#v", c)
 	// Output:
 	// func F() {}
 }
 
-func ExampleGenericsTypesNull() {
-	c := Func().Id("F").Types(Null()).Params().Block()
+func ExampleTypes_null() {
+	c := Func().ID("F").Types(Null()).Params().Block()
 	fmt.Printf("%#v", c)
 	// Output:
 	// func F() {}
 }
 
-func ExampleGenericsTypesDefinition() {
-	c := Func().Id("Keys").Types(
-		Id("K").Comparable(),
-		Id("V").Any(),
+func ExampleTypes_definition() {
+	c := Func().ID("Keys").Types(
+		ID("K").Comparable(),
+		ID("V").Any(),
 	).Params(
-		Id("m").Map(Id("K")).Id("V"),
-	).Index().Id("K").Block()
+		ID("m").Map(ID("K")).ID("V"),
+	).Index().ID("K").Block()
 	fmt.Printf("%#v", c)
 	// Output:
 	// func Keys[K comparable, V any](m map[K]V) []K {}
 }
 
-func ExampleGenericsTypesUsage() {
-	c := Return(Id("Keys").Types(Int(), String()).Call(Id("m")))
+func ExampleTypes_usage() {
+	c := Return(ID("Keys").Types(Int(), String()).Call(ID("m")))
 	fmt.Printf("%#v", c)
 	// Output:
 	// return Keys[int, string](m)
 }
 
-func ExampleGenericsUnion() {
-	c := Type().Id("PredeclaredSignedInteger").Interface(
+func ExampleUnion() {
+	c := Type().ID("PredeclaredSignedInteger").Interface(
 		Union(Int(), Int8(), Int16(), Int32(), Int64()),
 	)
 	fmt.Printf("%#v", c)
@@ -67,8 +67,8 @@ func ExampleGenericsUnion() {
 	// }
 }
 
-func ExampleGenericsApproximate() {
-	c := Type().Id("AnyString").Interface(
+func ExampleOp_approximate() {
+	c := Type().ID("AnyString").Interface(
 		Op("~").String(),
 	)
 	fmt.Printf("%#v", c)
@@ -78,11 +78,11 @@ func ExampleGenericsApproximate() {
 	// }
 }
 
-func ExampleCaseBug() {
-	c := Switch(Id("a")).Block(
+func ExampleCase_blockWithMultipleStatements() {
+	c := Switch(ID("a")).Block(
 		Case(Lit(1)).Block(
-			Var().Id("i").Int(),
-			Var().Id("j").Int(),
+			Var().ID("i").Int(),
+			Var().ID("j").Int(),
 		),
 	)
 	fmt.Printf("%#v", c)
@@ -101,7 +101,7 @@ func ExampleCustom() {
 		Open:      "(",
 		Separator: ",",
 	}
-	c := Id("foo").Custom(multiLineCall, Lit("a"), Lit("b"), Lit("c"))
+	c := ID("foo").Custom(multiLineCall, Lit("a"), Lit("b"), Lit("c"))
 	fmt.Printf("%#v", c)
 	// Output:
 	// foo(
@@ -118,7 +118,7 @@ func ExampleCustomFunc() {
 		Open:      "(",
 		Separator: ",",
 	}
-	c := Id("foo").CustomFunc(multiLineCall, func(g *Group) {
+	c := ID("foo").CustomFunc(multiLineCall, func(g *Group) {
 		g.Lit("a")
 		g.Lit("b")
 		g.Lit("c")
@@ -139,7 +139,7 @@ func ExampleFile_ImportName_conflict() {
 	// registers the required name, foo/a is aliased.
 	f.ImportName("github.com/foo/a", "a")
 
-	f.Func().Id("main").Params().Block(
+	f.Func().ID("main").Params().Block(
 		Qual("github.com/bar/a", "Bar").Call(),
 		Qual("github.com/foo/a", "Foo").Call(),
 	)
@@ -166,7 +166,7 @@ func ExampleFile_ImportAlias_conflict() {
 	// registers the required name, foo/a is aliased using the requested alias as a base.
 	f.ImportName("github.com/foo/a", "b")
 
-	f.Func().Id("main").Params().Block(
+	f.Func().ID("main").Params().Block(
 		Qual("github.com/bar/b", "Bar").Call(),
 		Qual("github.com/foo/a", "Foo").Call(),
 	)
@@ -195,7 +195,7 @@ func ExampleFile_ImportName() {
 	// package b is not used in the code so will not be included
 	f.ImportName("github.com/foo/b", "b")
 
-	f.Func().Id("main").Params().Block(
+	f.Func().ID("main").Params().Block(
 		Qual("github.com/foo/a", "A").Call(),
 	)
 	fmt.Printf("%#v", f)
@@ -211,7 +211,6 @@ func ExampleFile_ImportName() {
 }
 
 func ExampleFile_ImportNames() {
-
 	// package a should use name "a", package b is not used in the code so will not be included
 	names := map[string]string{
 		"github.com/foo/a": "a",
@@ -220,7 +219,7 @@ func ExampleFile_ImportNames() {
 
 	f := NewFile("main")
 	f.ImportNames(names)
-	f.Func().Id("main").Params().Block(
+	f.Func().ID("main").Params().Block(
 		Qual("github.com/foo/a", "A").Call(),
 	)
 	fmt.Printf("%#v", f)
@@ -244,7 +243,7 @@ func ExampleFile_ImportAlias() {
 	// package c is not used in the code so will not be included
 	f.ImportAlias("github.com/foo/c", "c")
 
-	f.Func().Id("main").Params().Block(
+	f.Func().ID("main").Params().Block(
 		Qual("github.com/foo/a", "A").Call(),
 	)
 	fmt.Printf("%#v", f)
@@ -259,7 +258,7 @@ func ExampleFile_ImportAlias() {
 	// }
 }
 
-func ExampleFile_ImportAliasDot() {
+func ExampleFile_ImportAlias_dot() {
 	f := NewFile("main")
 
 	// package a should be a dot-import
@@ -271,7 +270,7 @@ func ExampleFile_ImportAliasDot() {
 	// package c is not used in the code so will not be included
 	f.ImportAlias("github.com/foo/c", ".")
 
-	f.Func().Id("main").Params().Block(
+	f.Func().ID("main").Params().Block(
 		Qual("github.com/foo/a", "A").Call(),
 		Qual("github.com/foo/b", "B").Call(),
 	)
@@ -300,10 +299,10 @@ void myprint(char* s) {
 	printf("%s\n", s);
 }
 `)
-	f.Func().Id("init").Params().Block(
-		Id("cs").Op(":=").Qual("C", "CString").Call(Lit("Hello from stdio\n")),
-		Qual("C", "myprint").Call(Id("cs")),
-		Qual("C", "free").Call(Qual("unsafe", "Pointer").Parens(Id("cs"))),
+	f.Func().ID("init").Params().Block(
+		ID("cs").Op(":=").Qual("C", "CString").Call(Lit("Hello from stdio\n")),
+		Qual("C", "myprint").Call(ID("cs")),
+		Qual("C", "free").Call(Qual("unsafe", "Pointer").Parens(ID("cs"))),
 	)
 	fmt.Printf("%#v", f)
 	// Output:
@@ -331,7 +330,7 @@ void myprint(char* s) {
 func ExampleFile_CgoPreamble_anon() {
 	f := NewFile("a")
 	f.CgoPreamble(`#include <stdio.h>`)
-	f.Func().Id("init").Params().Block(
+	f.Func().ID("init").Params().Block(
 		Qual("foo.bar/a", "A"),
 		Qual("foo.bar/b", "B"),
 	)
@@ -355,7 +354,7 @@ func ExampleFile_CgoPreamble_anon() {
 
 func ExampleFile_CgoPreamble_no_preamble() {
 	f := NewFile("a")
-	f.Func().Id("init").Params().Block(
+	f.Func().ID("init").Params().Block(
 		Qual("C", "Foo").Call(),
 		Qual("fmt", "Print").Call(),
 	)
@@ -376,7 +375,7 @@ func ExampleFile_CgoPreamble_no_preamble() {
 
 func ExampleFile_CgoPreamble_no_preamble_single() {
 	f := NewFile("a")
-	f.Func().Id("init").Params().Block(
+	f.Func().ID("init").Params().Block(
 		Qual("C", "Foo").Call(),
 	)
 	fmt.Printf("%#v", f)
@@ -393,7 +392,7 @@ func ExampleFile_CgoPreamble_no_preamble_single() {
 func ExampleFile_CgoPreamble_no_preamble_single_anon() {
 	f := NewFile("a")
 	f.Anon("C")
-	f.Func().Id("init").Params().Block()
+	f.Func().ID("init").Params().Block()
 	fmt.Printf("%#v", f)
 	// Output:
 	// package a
@@ -406,7 +405,7 @@ func ExampleFile_CgoPreamble_no_preamble_single_anon() {
 func ExampleFile_CgoPreamble_no_preamble_anon() {
 	f := NewFile("a")
 	f.Anon("C")
-	f.Func().Id("init").Params().Block(
+	f.Func().ID("init").Params().Block(
 		Qual("fmt", "Print").Call(),
 	)
 	fmt.Printf("%#v", f)
@@ -424,7 +423,7 @@ func ExampleFile_CgoPreamble_no_preamble_anon() {
 }
 
 func ExampleOp_complex_conditions() {
-	c := If(Parens(Id("a").Op("||").Id("b")).Op("&&").Id("c")).Block()
+	c := If(Parens(ID("a").Op("||").ID("b")).Op("&&").ID("c")).Block()
 	fmt.Printf("%#v", c)
 	// Output:
 	// if (a || b) && c {
@@ -651,9 +650,9 @@ func ExampleValues_dict_multiple() {
 }
 
 func ExampleValues_dict_composite() {
-	c := Op("&").Id("Person").Values(Dict{
-		Id("Age"):  Lit(1),
-		Id("Name"): Lit("a"),
+	c := Op("&").ID("Person").Values(Dict{
+		ID("Age"):  Lit(1),
+		ID("Name"): Lit("a"),
 	})
 	fmt.Printf("%#v", c)
 	// Output:
@@ -665,14 +664,14 @@ func ExampleValues_dict_composite() {
 
 func ExampleAdd() {
 	ptr := Op("*")
-	c := Id("a").Op("=").Add(ptr).Id("b")
+	c := ID("a").Op("=").Add(ptr).ID("b")
 	fmt.Printf("%#v", c)
 	// Output:
 	// a = *b
 }
 
 func ExampleAdd_var() {
-	a := Id("a")
+	a := ID("a")
 	i := Int()
 	c := Var().Add(a, i)
 	fmt.Printf("%#v", c)
@@ -681,31 +680,31 @@ func ExampleAdd_var() {
 }
 
 func ExampleAppend() {
-	c := Append(Id("a"), Id("b"))
+	c := Append(ID("a"), ID("b"))
 	fmt.Printf("%#v", c)
 	// Output:
 	// append(a, b)
 }
 
 func ExampleAppend_more() {
-	c := Id("a").Op("=").Append(Id("a"), Id("b").Op("..."))
+	c := ID("a").Op("=").Append(ID("a"), ID("b").Op("..."))
 	fmt.Printf("%#v", c)
 	// Output:
 	// a = append(a, b...)
 }
 
 func ExampleAssert() {
-	c := List(Id("b"), Id("ok")).Op(":=").Id("a").Assert(Bool())
+	c := List(ID("b"), ID("ok")).Op(":=").ID("a").Assert(Bool())
 	fmt.Printf("%#v", c)
 	// Output:
 	// b, ok := a.(bool)
 }
 
 func ExampleBlock() {
-	c := Func().Id("foo").Params().String().Block(
-		Id("a").Op("=").Id("b"),
-		Id("b").Op("++"),
-		Return(Id("b")),
+	c := Func().ID("foo").Params().String().Block(
+		ID("a").Op("=").ID("b"),
+		ID("b").Op("++"),
+		Return(ID("b")),
 	)
 	fmt.Printf("%#v", c)
 	// Output:
@@ -717,8 +716,8 @@ func ExampleBlock() {
 }
 
 func ExampleBlock_if() {
-	c := If(Id("a").Op(">").Lit(10)).Block(
-		Id("a").Op("=").Id("a").Op("/").Lit(2),
+	c := If(ID("a").Op(">").Lit(10)).Block(
+		ID("a").Op("=").ID("a").Op("/").Lit(2),
 	)
 	fmt.Printf("%#v", c)
 	// Output:
@@ -728,7 +727,7 @@ func ExampleBlock_if() {
 }
 
 func ExampleValuesFunc() {
-	c := Id("numbers").Op(":=").Index().Int().ValuesFunc(func(g *Group) {
+	c := ID("numbers").Op(":=").Index().Int().ValuesFunc(func(g *Group) {
 		for i := 0; i <= 5; i++ {
 			g.Lit(i)
 		}
@@ -741,12 +740,12 @@ func ExampleValuesFunc() {
 func ExampleBlockFunc() {
 	increment := true
 	name := "a"
-	c := Func().Id("a").Params().BlockFunc(func(g *Group) {
-		g.Id(name).Op("=").Lit(1)
+	c := Func().ID("a").Params().BlockFunc(func(g *Group) {
+		g.ID(name).Op("=").Lit(1)
 		if increment {
-			g.Id(name).Op("++")
+			g.ID(name).Op("++")
 		} else {
-			g.Id(name).Op("--")
+			g.ID(name).Op("--")
 		}
 	})
 	fmt.Printf("%#v", c)
@@ -758,7 +757,7 @@ func ExampleBlockFunc() {
 }
 
 func ExampleBool() {
-	c := Var().Id("b").Bool()
+	c := Var().ID("b").Bool()
 	fmt.Printf("%#v", c)
 	// Output:
 	// var b bool
@@ -766,11 +765,11 @@ func ExampleBool() {
 
 func ExampleBreak() {
 	c := For(
-		Id("i").Op(":=").Lit(0),
-		Id("i").Op("<").Lit(10),
-		Id("i").Op("++"),
+		ID("i").Op(":=").Lit(0),
+		ID("i").Op("<").Lit(10),
+		ID("i").Op("++"),
 	).Block(
-		If(Id("i").Op(">").Lit(5)).Block(
+		If(ID("i").Op(">").Lit(5)).Block(
 			Break(),
 		),
 	)
@@ -784,7 +783,7 @@ func ExampleBreak() {
 }
 
 func ExampleByte() {
-	c := Id("b").Op(":=").Id("a").Assert(Byte())
+	c := ID("b").Op(":=").ID("a").Assert(Byte())
 	fmt.Printf("%#v", c)
 	// Output:
 	// b := a.(byte)
@@ -793,8 +792,8 @@ func ExampleByte() {
 func ExampleCall() {
 	c := Qual("fmt", "Printf").Call(
 		Lit("%#v: %T\n"),
-		Id("a"),
-		Id("b"),
+		ID("a"),
+		ID("b"),
 	)
 	fmt.Printf("%#v", c)
 	// Output:
@@ -802,7 +801,7 @@ func ExampleCall() {
 }
 
 func ExampleCall_fmt() {
-	c := Id("a").Call(Lit("b"))
+	c := ID("a").Call(Lit("b"))
 	fmt.Printf("%#v", c)
 	// Output:
 	// a("b")
@@ -810,8 +809,8 @@ func ExampleCall_fmt() {
 
 func ExampleCallFunc() {
 	f := func(name string, second string) {
-		c := Id("foo").CallFunc(func(g *Group) {
-			g.Id(name)
+		c := ID("foo").CallFunc(func(g *Group) {
+			g.ID(name)
 			if second != "" {
 				g.Lit(second)
 			}
@@ -826,18 +825,18 @@ func ExampleCallFunc() {
 }
 
 func ExampleCap() {
-	c := Id("i").Op(":=").Cap(Id("v"))
+	c := ID("i").Op(":=").Cap(ID("v"))
 	fmt.Printf("%#v", c)
 	// Output:
 	// i := cap(v)
 }
 
 func ExampleCase() {
-	c := Switch(Id("person")).Block(
-		Case(Id("John"), Id("Peter")).Block(
+	c := Switch(ID("person")).Block(
+		Case(ID("John"), ID("Peter")).Block(
 			Return(Lit("male")),
 		),
-		Case(Id("Gill")).Block(
+		Case(ID("Gill")).Block(
 			Return(Lit("female")),
 		),
 	)
@@ -853,11 +852,11 @@ func ExampleCase() {
 
 func ExampleBlock_case() {
 	c := Select().Block(
-		Case(Op("<-").Id("done")).Block(
+		Case(Op("<-").ID("done")).Block(
 			Return(Nil()),
 		),
-		Case(List(Err(), Id("open")).Op(":=").Op("<-").Id("fail")).Block(
-			If(Op("!").Id("open")).Block(
+		Case(List(Err(), ID("open")).Op(":=").Op("<-").ID("fail")).Block(
+			If(Op("!").ID("open")).Block(
 				Return(Err()),
 			),
 		),
@@ -877,10 +876,10 @@ func ExampleBlock_case() {
 func ExampleBlockFunc_case() {
 	preventExitOnError := true
 	c := Select().Block(
-		Case(Op("<-").Id("done")).Block(
+		Case(Op("<-").ID("done")).Block(
 			Return(Nil()),
 		),
-		Case(Err().Op(":=").Op("<-").Id("fail")).BlockFunc(func(g *Group) {
+		Case(Err().Op(":=").Op("<-").ID("fail")).BlockFunc(func(g *Group) {
 			if !preventExitOnError {
 				g.Return(Err())
 			} else {
@@ -900,20 +899,20 @@ func ExampleBlockFunc_case() {
 
 func ExampleCaseFunc() {
 	samIsMale := false
-	c := Switch(Id("person")).Block(
+	c := Switch(ID("person")).Block(
 		CaseFunc(func(g *Group) {
-			g.Id("John")
-			g.Id("Peter")
+			g.ID("John")
+			g.ID("Peter")
 			if samIsMale {
-				g.Id("Sam")
+				g.ID("Sam")
 			}
 		}).Block(
 			Return(Lit("male")),
 		),
 		CaseFunc(func(g *Group) {
-			g.Id("Gill")
+			g.ID("Gill")
 			if !samIsMale {
-				g.Id("Sam")
+				g.ID("Sam")
 			}
 		}).Block(
 			Return(Lit("female")),
@@ -930,13 +929,13 @@ func ExampleCaseFunc() {
 }
 
 func ExampleChan() {
-	c := Func().Id("init").Params().Block(
-		Id("c").Op(":=").Make(Chan().Qual("os", "Signal"), Lit(1)),
-		Qual("os/signal", "Notify").Call(Id("c"), Qual("os", "Interrupt")),
-		Qual("os/signal", "Notify").Call(Id("c"), Qual("syscall", "SIGTERM")),
+	c := Func().ID("init").Params().Block(
+		ID("c").Op(":=").Make(Chan().Qual("os", "Signal"), Lit(1)),
+		Qual("os/signal", "Notify").Call(ID("c"), Qual("os", "Interrupt")),
+		Qual("os/signal", "Notify").Call(ID("c"), Qual("syscall", "SIGTERM")),
 		Go().Func().Params().Block(
-			Op("<-").Id("c"),
-			Id("cancel").Call(),
+			Op("<-").ID("c"),
+			ID("cancel").Call(),
 		).Call(),
 	)
 	fmt.Printf("%#v", c)
@@ -954,12 +953,12 @@ func ExampleChan() {
 
 func ExampleClose() {
 	c := Block(
-		Id("ch").Op(":=").Make(Chan().Struct()),
+		ID("ch").Op(":=").Make(Chan().Struct()),
 		Go().Func().Params().Block(
-			Op("<-").Id("ch"),
+			Op("<-").ID("ch"),
 			Qual("fmt", "Println").Call(Lit("done.")),
 		).Call(),
-		Close(Id("ch")),
+		Close(ID("ch")),
 	)
 	fmt.Printf("%#v", c)
 	// Output:
@@ -975,8 +974,8 @@ func ExampleClose() {
 
 func ExampleClear() {
 	c := Block(
-		Id("a").Op(":=").Map(String()).String().Values(),
-		Clear(Id("a")),
+		ID("a").Op(":=").Map(String()).String().Values(),
+		Clear(ID("a")),
 	)
 	fmt.Printf("%#v", c)
 	// Output:
@@ -988,7 +987,7 @@ func ExampleClear() {
 
 func ExampleMin() {
 	c := Block(
-		Id("n").Op(":=").Min(Lit(1), Lit(2)),
+		ID("n").Op(":=").Min(Lit(1), Lit(2)),
 	)
 	fmt.Printf("%#v", c)
 	// Output:
@@ -999,7 +998,7 @@ func ExampleMin() {
 
 func ExampleMax() {
 	c := Block(
-		Id("x").Op(":=").Max(Lit(1), Lit(2)),
+		ID("x").Op(":=").Max(Lit(1), Lit(2)),
 	)
 	fmt.Printf("%#v", c)
 	// Output:
@@ -1011,7 +1010,7 @@ func ExampleMax() {
 func ExampleComment() {
 	f := NewFile("a")
 	f.Comment("Foo returns the string \"foo\"")
-	f.Func().Id("Foo").Params().String().Block(
+	f.Func().ID("Foo").Params().String().Block(
 		Return(Lit("foo")).Comment("return the string foo"),
 	)
 	fmt.Printf("%#v", f)
@@ -1035,7 +1034,7 @@ func ExampleComment_multiline() {
 }
 
 func ExampleComment_formatting_disabled() {
-	c := Id("foo").Call(Comment("/* inline */")).Comment("//no-space")
+	c := ID("foo").Call(Comment("/* inline */")).Comment("//no-space")
 	fmt.Printf("%#v", c)
 	// Output:
 	// foo( /* inline */ ) //no-space
@@ -1044,17 +1043,17 @@ func ExampleComment_formatting_disabled() {
 func ExampleCommentf() {
 	name := "foo"
 	val := "bar"
-	c := Id(name).Op(":=").Lit(val).Commentf("%s is the string \"%s\"", name, val)
+	c := ID(name).Op(":=").Lit(val).Commentf("%s is the string \"%s\"", name, val)
 	fmt.Printf("%#v", c)
 	// Output:
 	// foo := "bar" // foo is the string "bar"
 }
 
 func ExampleComplex() {
-	c := Func().Id("main").Params().Block(
-		Id("c1").Op(":=").Lit(1+3.75i),
-		Id("c2").Op(":=").Complex(Lit(1), Lit(3.75)),
-		Qual("fmt", "Println").Call(Id("c1").Op("==").Id("c2")),
+	c := Func().ID("main").Params().Block(
+		ID("c1").Op(":=").Lit(1+3.75i),
+		ID("c2").Op(":=").Complex(Lit(1), Lit(3.75)),
+		Qual("fmt", "Println").Call(ID("c1").Op("==").ID("c2")),
 	)
 	fmt.Printf("%#v", c)
 	// Output:
@@ -1066,10 +1065,10 @@ func ExampleComplex() {
 }
 
 func ExampleComplex128() {
-	c := Func().Id("main").Params().Block(
-		Var().Id("c").Complex128(),
-		Id("c").Op("=").Lit(1+2i),
-		Qual("fmt", "Println").Call(Id("c")),
+	c := Func().ID("main").Params().Block(
+		Var().ID("c").Complex128(),
+		ID("c").Op("=").Lit(1+2i),
+		Qual("fmt", "Println").Call(ID("c")),
 	)
 	fmt.Printf("%#v", c)
 	// Output:
@@ -1081,10 +1080,10 @@ func ExampleComplex128() {
 }
 
 func ExampleComplex64() {
-	c := Func().Id("main").Params().Block(
-		Var().Id("c64").Complex64(),
-		Id("c64").Op("=").Complex(Lit(5), Float32().Parens(Lit(2))),
-		Qual("fmt", "Printf").Call(Lit("%T\n"), Id("c64")),
+	c := Func().ID("main").Params().Block(
+		Var().ID("c64").Complex64(),
+		ID("c64").Op("=").Complex(Lit(5), Float32().Parens(Lit(2))),
+		Qual("fmt", "Printf").Call(Lit("%T\n"), ID("c64")),
 	)
 	fmt.Printf("%#v", c)
 	// Output:
@@ -1097,12 +1096,12 @@ func ExampleComplex64() {
 
 func ExampleParams() {
 	c := Func().Params(
-		Id("a").Id("A"),
-	).Id("foo").Params(
-		Id("b"),
-		Id("c").String(),
+		ID("a").ID("A"),
+	).ID("foo").Params(
+		ID("b"),
+		ID("c").String(),
 	).String().Block(
-		Return(Id("b").Op("+").Id("c")),
+		Return(ID("b").Op("+").ID("c")),
 	)
 	fmt.Printf("%#v", c)
 	// Output:
@@ -1112,42 +1111,42 @@ func ExampleParams() {
 }
 
 func ExampleIndex() {
-	c := Var().Id("a").Index().String()
+	c := Var().ID("a").Index().String()
 	fmt.Printf("%#v", c)
 	// Output:
 	// var a []string
 }
 
 func ExampleIndex_index() {
-	c := Id("a").Op(":=").Id("b").Index(Lit(0), Lit(1))
+	c := ID("a").Op(":=").ID("b").Index(Lit(0), Lit(1))
 	fmt.Printf("%#v", c)
 	// Output:
 	// a := b[0:1]
 }
 
 func ExampleIndex_empty() {
-	c := Id("a").Op(":=").Id("b").Index(Lit(1), Empty())
+	c := ID("a").Op(":=").ID("b").Index(Lit(1), Empty())
 	fmt.Printf("%#v", c)
 	// Output:
 	// a := b[1:]
 }
 
 func ExampleOp() {
-	c := Id("a").Op(":=").Id("b").Call()
+	c := ID("a").Op(":=").ID("b").Call()
 	fmt.Printf("%#v", c)
 	// Output:
 	// a := b()
 }
 
 func ExampleOp_star() {
-	c := Id("a").Op("=").Op("*").Id("b")
+	c := ID("a").Op("=").Op("*").ID("b")
 	fmt.Printf("%#v", c)
 	// Output:
 	// a = *b
 }
 
 func ExampleOp_variadic() {
-	c := Id("a").Call(Id("b").Op("..."))
+	c := ID("a").Call(ID("b").Op("..."))
 	fmt.Printf("%#v", c)
 	// Output:
 	// a(b...)
@@ -1155,7 +1154,7 @@ func ExampleOp_variadic() {
 
 func ExampleNewFilePath() {
 	f := NewFilePath("a.b/c")
-	f.Func().Id("init").Params().Block(
+	f.Func().ID("init").Params().Block(
 		Qual("a.b/c", "Foo").Call().Comment("Local package - alias is omitted."),
 		Qual("d.e/f", "Bar").Call().Comment("Import is automatically added."),
 		Qual("g.h/f", "Baz").Call().Comment("Colliding package name is automatically renamed."),
@@ -1177,16 +1176,16 @@ func ExampleNewFilePath() {
 }
 
 func ExampleStruct_empty() {
-	c := Id("c").Op(":=").Make(Chan().Struct())
+	c := ID("c").Op(":=").Make(Chan().Struct())
 	fmt.Printf("%#v", c)
 	// Output:
 	// c := make(chan struct{})
 }
 
 func ExampleStruct() {
-	c := Type().Id("foo").Struct(
-		List(Id("x"), Id("y")).Int(),
-		Id("u").Float32(),
+	c := Type().ID("foo").Struct(
+		List(ID("x"), ID("y")).Int(),
+		ID("u").Float32(),
 	)
 	fmt.Printf("%#v", c)
 	// Output:
@@ -1197,21 +1196,21 @@ func ExampleStruct() {
 }
 
 func ExampleDefer() {
-	c := Defer().Id("foo").Call()
+	c := Defer().ID("foo").Call()
 	fmt.Printf("%#v", c)
 	// Output:
 	// defer foo()
 }
 
 func ExampleGoto() {
-	c := Goto().Id("Outer")
+	c := Goto().ID("Outer")
 	fmt.Printf("%#v", c)
 	// Output:
 	// goto Outer
 }
 
 func ExampleStatement_Clone_broken() {
-	a := Id("a")
+	a := ID("a")
 	c := Block(
 		a.Call(),
 		a.Call(),
@@ -1225,7 +1224,7 @@ func ExampleStatement_Clone_broken() {
 }
 
 func ExampleStatement_Clone_fixed() {
-	a := Id("a")
+	a := ID("a")
 	c := Block(
 		a.Clone().Call(),
 		a.Clone().Call(),
@@ -1240,7 +1239,7 @@ func ExampleStatement_Clone_fixed() {
 
 func ExampleFile_Render() {
 	f := NewFile("a")
-	f.Func().Id("main").Params().Block()
+	f.Func().ID("main").Params().Block()
 	buf := &bytes.Buffer{}
 	err := f.Render(buf)
 	if err != nil {
@@ -1255,21 +1254,21 @@ func ExampleFile_Render() {
 }
 
 func ExampleLit() {
-	c := Id("a").Op(":=").Lit("a")
+	c := ID("a").Op(":=").Lit("a")
 	fmt.Printf("%#v", c)
 	// Output:
 	// a := "a"
 }
 
 func ExampleLit_float() {
-	c := Id("a").Op(":=").Lit(1.5)
+	c := ID("a").Op(":=").Lit(1.5)
 	fmt.Printf("%#v", c)
 	// Output:
 	// a := 1.5
 }
 
 func ExampleLitFunc() {
-	c := Id("a").Op(":=").LitFunc(func() interface{} { return 1 + 1 })
+	c := ID("a").Op(":=").LitFunc(func() any { return 1 + 1 })
 	fmt.Printf("%#v", c)
 	// Output:
 	// a := 2
@@ -1283,7 +1282,7 @@ func ExampleDot() {
 }
 
 func ExampleList() {
-	c := List(Id("a"), Err()).Op(":=").Id("b").Call()
+	c := List(ID("a"), Err()).Op(":=").ID("b").Call()
 	fmt.Printf("%#v", c)
 	// Output:
 	// a, err := b()
@@ -1298,7 +1297,7 @@ func ExampleQual() {
 
 func ExampleQual_file() {
 	f := NewFilePath("a.b/c")
-	f.Func().Id("init").Params().Block(
+	f.Func().ID("init").Params().Block(
 		Qual("a.b/c", "Foo").Call().Comment("Local package - name is omitted."),
 		Qual("d.e/f", "Bar").Call().Comment("Import is automatically added."),
 		Qual("g.h/f", "Baz").Call().Comment("Colliding package name is renamed."),
@@ -1321,7 +1320,7 @@ func ExampleQual_file() {
 
 func ExampleQual_local() {
 	f := NewFilePath("a.b/c")
-	f.Func().Id("main").Params().Block(
+	f.Func().ID("main").Params().Block(
 		Qual("a.b/c", "D").Call(),
 	)
 	fmt.Printf("%#v", f)
@@ -1333,9 +1332,9 @@ func ExampleQual_local() {
 	// }
 }
 
-func ExampleId() {
-	c := If(Id("i").Op("==").Id("j")).Block(
-		Return(Id("i")),
+func ExampleID() {
+	c := If(ID("i").Op("==").ID("j")).Block(
+		Return(ID("i")),
 	)
 	fmt.Printf("%#v", c)
 	// Output:
@@ -1346,7 +1345,7 @@ func ExampleId() {
 
 func ExampleErr() {
 	c := If(
-		Err().Op(":=").Id("foo").Call(),
+		Err().Op(":=").ID("foo").Call(),
 		Err().Op("!=").Nil(),
 	).Block(
 		Return(Err()),
@@ -1359,7 +1358,7 @@ func ExampleErr() {
 }
 
 func ExampleSwitch() {
-	c := Switch(Id("value").Dot("Kind").Call()).Block(
+	c := Switch(ID("value").Dot("Kind").Call()).Block(
 		Case(Qual("reflect", "Float32"), Qual("reflect", "Float64")).Block(
 			Return(Lit("float")),
 		),
@@ -1388,9 +1387,9 @@ func ExampleSwitch() {
 }
 
 func ExampleTag() {
-	c := Type().Id("foo").Struct(
-		Id("A").String().Tag(map[string]string{"json": "a"}),
-		Id("B").Int().Tag(map[string]string{"json": "b", "bar": "baz"}),
+	c := Type().ID("foo").Struct(
+		ID("A").String().Tag(map[string]string{"json": "a"}),
+		ID("B").Int().Tag(map[string]string{"json": "b", "bar": "baz"}),
 	)
 	fmt.Printf("%#v", c)
 	// Output:
@@ -1401,9 +1400,9 @@ func ExampleTag() {
 }
 
 func ExampleTag_withQuotesAndNewline() {
-	c := Type().Id("foo").Struct(
-		Id("A").String().Tag(map[string]string{"json": "a"}),
-		Id("B").Int().Tag(map[string]string{"json": "b", "bar": "the value of\nthe\"bar\" tag"}),
+	c := Type().ID("foo").Struct(
+		ID("A").String().Tag(map[string]string{"json": "a"}),
+		ID("B").Int().Tag(map[string]string{"json": "b", "bar": "the value of\nthe\"bar\" tag"}),
 	)
 	fmt.Printf("%#v", c)
 	// Output:
@@ -1414,11 +1413,11 @@ func ExampleTag_withQuotesAndNewline() {
 }
 
 func ExampleNull_and_nil() {
-	c := Func().Id("foo").Params(
+	c := Func().ID("foo").Params(
 		nil,
-		Id("s").String(),
+		ID("s").String(),
 		Null(),
-		Id("i").Int(),
+		ID("i").Int(),
 	).Block()
 	fmt.Printf("%#v", c)
 	// Output:
@@ -1426,14 +1425,14 @@ func ExampleNull_and_nil() {
 }
 
 func ExampleNull_index() {
-	c := Id("a").Op(":=").Id("b").Index(Lit(1), Null())
+	c := ID("a").Op(":=").ID("b").Index(Lit(1), Null())
 	fmt.Printf("%#v", c)
 	// Output:
 	// a := b[1]
 }
 
 func ExampleEmpty() {
-	c := Id("a").Op(":=").Id("b").Index(Lit(1), Empty())
+	c := ID("a").Op(":=").ID("b").Index(Lit(1), Empty())
 	fmt.Printf("%#v", c)
 	// Output:
 	// a := b[1:]
@@ -1443,13 +1442,13 @@ func ExampleBlock_complex() {
 	collection := func(name string, key Code, value Code) *Statement {
 		if key == nil {
 			// slice
-			return Var().Id(name).Index().Add(value)
+			return Var().ID(name).Index().Add(value)
 		} else {
 			// map
-			return Var().Id(name).Map(key).Add(value)
+			return Var().ID(name).Map(key).Add(value)
 		}
 	}
-	c := Func().Id("main").Params().Block(
+	c := Func().ID("main").Params().Block(
 		collection("foo", nil, String()),
 		collection("bar", String(), Int()),
 	)
@@ -1462,22 +1461,22 @@ func ExampleBlock_complex() {
 }
 
 func ExampleFunc_declaration() {
-	c := Func().Id("a").Params().Block()
+	c := Func().ID("a").Params().Block()
 	fmt.Printf("%#v", c)
 	// Output:
 	// func a() {}
 }
 
 func ExampleFunc_literal() {
-	c := Id("a").Op(":=").Func().Params().Block()
+	c := ID("a").Op(":=").Func().Params().Block()
 	fmt.Printf("%#v", c)
 	// Output:
 	// a := func() {}
 }
 
 func ExampleInterface() {
-	c := Type().Id("a").Interface(
-		Id("b").Params().String(),
+	c := Type().ID("a").Interface(
+		ID("b").Params().String(),
 	)
 	fmt.Printf("%#v", c)
 	// Output:
@@ -1487,21 +1486,21 @@ func ExampleInterface() {
 }
 
 func ExampleInterface_empty() {
-	c := Var().Id("a").Interface()
+	c := Var().ID("a").Interface()
 	fmt.Printf("%#v", c)
 	// Output:
 	// var a interface{}
 }
 
 func ExampleParens() {
-	c := Id("b").Op(":=").Index().Byte().Parens(Id("s"))
+	c := ID("b").Op(":=").Index().Byte().Parens(ID("s"))
 	fmt.Printf("%#v", c)
 	// Output:
 	// b := []byte(s)
 }
 
 func ExampleParens_order() {
-	c := Id("a").Op("/").Parens(Id("b").Op("+").Id("c"))
+	c := ID("a").Op("/").Parens(ID("b").Op("+").ID("c"))
 	fmt.Printf("%#v", c)
 	// Output:
 	// a / (b + c)
@@ -1516,7 +1515,7 @@ func ExampleValues() {
 
 func ExampleDo() {
 	f := func(name string, isMap bool) *Statement {
-		return Id(name).Op(":=").Do(func(s *Statement) {
+		return ID(name).Op(":=").Do(func(s *Statement) {
 			if isMap {
 				s.Map(String()).String()
 			} else {
@@ -1531,21 +1530,21 @@ func ExampleDo() {
 }
 
 func ExampleReturn() {
-	c := Return(Id("a"), Id("b"))
+	c := Return(ID("a"), ID("b"))
 	fmt.Printf("%#v", c)
 	// Output:
 	// return a, b
 }
 
 func ExampleMap() {
-	c := Id("a").Op(":=").Map(String()).String().Values()
+	c := ID("a").Op(":=").Map(String()).String().Values()
 	fmt.Printf("%#v", c)
 	// Output:
 	// a := map[string]string{}
 }
 
 func ExampleDict() {
-	c := Id("a").Op(":=").Map(String()).String().Values(Dict{
+	c := ID("a").Op(":=").Map(String()).String().Values(Dict{
 		Lit("a"): Lit("b"),
 		Lit("c"): Lit("d"),
 	})
@@ -1558,14 +1557,14 @@ func ExampleDict() {
 }
 
 func ExampleDict_nil() {
-	c := Id("a").Op(":=").Map(String()).String().Values()
+	c := ID("a").Op(":=").Map(String()).String().Values()
 	fmt.Printf("%#v", c)
 	// Output:
 	// a := map[string]string{}
 }
 
 func ExampleDictFunc() {
-	c := Id("a").Op(":=").Map(String()).String().Values(DictFunc(func(d Dict) {
+	c := ID("a").Op(":=").Map(String()).String().Values(DictFunc(func(d Dict) {
 		d[Lit("a")] = Lit("b")
 		d[Lit("c")] = Lit("d")
 	}))
@@ -1579,8 +1578,8 @@ func ExampleDictFunc() {
 
 func ExampleDefs() {
 	c := Const().Defs(
-		Id("a").Op("=").Lit("a"),
-		Id("b").Op("=").Lit("b"),
+		ID("a").Op("=").Lit("a"),
+		ID("b").Op("=").Lit("b"),
 	)
 	fmt.Printf("%#v", c)
 	// Output:
@@ -1592,7 +1591,7 @@ func ExampleDefs() {
 
 func ExampleIf() {
 	c := If(
-		Err().Op(":=").Id("a").Call(),
+		Err().Op(":=").ID("a").Call(),
 		Err().Op("!=").Nil(),
 	).Block(
 		Return(Err()),
@@ -1604,23 +1603,23 @@ func ExampleIf() {
 	// }
 }
 
-func ExampleId_local() {
-	c := Id("a").Op(":=").Lit(1)
+func ExampleID_local() {
+	c := ID("a").Op(":=").Lit(1)
 	fmt.Printf("%#v", c)
 	// Output:
 	// a := 1
 }
 
-func ExampleId_select() {
-	c := Id("a").Dot("b").Dot("c").Call()
+func ExampleID_select() {
+	c := ID("a").Dot("b").Dot("c").Call()
 	fmt.Printf("%#v", c)
 	// Output:
 	// a.b.c()
 }
 
-func ExampleId_remote() {
+func ExampleID_remote() {
 	f := NewFile("main")
-	f.Func().Id("main").Params().Block(
+	f.Func().ID("main").Params().Block(
 		Qual("fmt", "Println").Call(
 			Lit("Hello, world"),
 		),
@@ -1638,11 +1637,11 @@ func ExampleId_remote() {
 
 func ExampleFor() {
 	c := For(
-		Id("i").Op(":=").Lit(0),
-		Id("i").Op("<").Lit(10),
-		Id("i").Op("++"),
+		ID("i").Op(":=").Lit(0),
+		ID("i").Op("<").Lit(10),
+		ID("i").Op("++"),
 	).Block(
-		Qual("fmt", "Println").Call(Id("i")),
+		Qual("fmt", "Println").Call(ID("i")),
 	)
 	fmt.Printf("%#v", c)
 	// Output:
@@ -1653,7 +1652,7 @@ func ExampleFor() {
 
 func ExampleNewFile() {
 	f := NewFile("main")
-	f.Func().Id("main").Params().Block(
+	f.Func().ID("main").Params().Block(
 		Qual("fmt", "Println").Call(Lit("Hello, world")),
 	)
 	fmt.Printf("%#v", f)
@@ -1669,7 +1668,7 @@ func ExampleNewFile() {
 
 func ExampleNewFilePathName() {
 	f := NewFilePathName("a.b/c", "main")
-	f.Func().Id("main").Params().Block(
+	f.Func().ID("main").Params().Block(
 		Qual("a.b/c", "Foo").Call(),
 	)
 	fmt.Printf("%#v", f)
@@ -1681,12 +1680,12 @@ func ExampleNewFilePathName() {
 	// }
 }
 
-func ExampleFile_HeaderAndPackageComments() {
+func ExampleFile_HeaderComment_withPackageComment() {
 	f := NewFile("c")
 	f.CanonicalPath = "d.e/f"
 	f.HeaderComment("Code generated by...")
 	f.PackageComment("Package c implements...")
-	f.Func().Id("init").Params().Block()
+	f.Func().ID("init").Params().Block()
 	fmt.Printf("%#v", f)
 	// Output:
 	// // Code generated by...
@@ -1700,7 +1699,7 @@ func ExampleFile_HeaderAndPackageComments() {
 func ExampleFile_Anon() {
 	f := NewFile("c")
 	f.Anon("a")
-	f.Func().Id("init").Params().Block()
+	f.Func().ID("init").Params().Block()
 	fmt.Printf("%#v", f)
 	// Output:
 	// package c
@@ -1713,7 +1712,7 @@ func ExampleFile_Anon() {
 func ExampleFile_PackagePrefix() {
 	f := NewFile("a")
 	f.PackagePrefix = "pkg"
-	f.Func().Id("main").Params().Block(
+	f.Func().ID("main").Params().Block(
 		Qual("b.c/d", "E").Call(),
 	)
 	fmt.Printf("%#v", f)
@@ -1731,11 +1730,87 @@ func ExampleFile_NoFormat() {
 	f := NewFile("main")
 	f.NoFormat = true
 
-	f.Func().Id("main").Params().Block(
+	f.Func().ID("main").Params().Block(
 		Qual("fmt", "Println").Call(Lit("foo")),
 	)
 	fmt.Printf("%q", fmt.Sprintf("%#v", f)) // Special case because Go Examples don't handle multiple newlines well.
 
 	// Output:
 	// "package main\n\nimport \"fmt\"\n\n\nfunc main () {\nfmt.Println (\"foo\")\n}"
+}
+
+// Go 1.22: range over integer
+func ExampleFor_rangeOverInt() {
+	c := For(
+		ID("i").Op(":=").Range().Lit(10),
+	).Block(
+		Qual("fmt", "Println").Call(ID("i")),
+	)
+	fmt.Printf("%#v", c)
+	// Output:
+	// for i := range 10 {
+	// 	fmt.Println(i)
+	// }
+}
+
+// Go 1.22: range over integer, no variable
+func ExampleFor_rangeOverIntNoVar() {
+	c := For(
+		Range().Lit(10),
+	).Block(
+		Qual("fmt", "Println").Call(Lit("hello")),
+	)
+	fmt.Printf("%#v", c)
+	// Output:
+	// for range 10 {
+	// 	fmt.Println("hello")
+	// }
+}
+
+// Go 1.23: range over iterator function (func(yield func(int) bool))
+func ExampleFor_rangeOverFunc() {
+	c := For(
+		ID("v").Op(":=").Range().ID("seq"),
+	).Block(
+		Qual("fmt", "Println").Call(ID("v")),
+	)
+	fmt.Printf("%#v", c)
+	// Output:
+	// for v := range seq {
+	// 	fmt.Println(v)
+	// }
+}
+
+// Go 1.23: range over two-value iterator function (func(yield func(int, string) bool))
+func ExampleFor_rangeOverFunc2() {
+	c := For(
+		List(ID("k"), ID("v")).Op(":=").Range().ID("seq2"),
+	).Block(
+		Qual("fmt", "Println").Call(ID("k"), ID("v")),
+	)
+	fmt.Printf("%#v", c)
+	// Output:
+	// for k, v := range seq2 {
+	// 	fmt.Println(k, v)
+	// }
+}
+
+// Go 1.23: iterator function type signature
+func ExampleFunc_iteratorType() {
+	// type Seq = func(yield func(int) bool)
+	c := Type().ID("Seq").Op("=").Func().Params(
+		ID("yield").Func().Params(Int()).Bool(),
+	)
+	fmt.Printf("%#v", c)
+	// Output:
+	// type Seq = func(yield func(int) bool)
+}
+
+// Go 1.24: generic type alias
+func ExampleType_genericAlias() {
+	// type Set[T comparable] = map[T]struct{}
+	c := Type().ID("Set").Types(ID("T").Comparable()).Op("=").Map(ID("T")).Struct()
+	fmt.Printf("%#v", c)
+	// Output:
+	// type Set[T comparable] = map[T]struct{}
 }
