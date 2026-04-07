@@ -6,17 +6,14 @@ import (
 	"io"
 	"os"
 	"os/exec"
+	"path/filepath"
+	"regexp"
 	"strings"
 
-	"regexp"
-
-	"path/filepath"
-
-	. "github.com/dave/jennifer/jen"
+	. "github.com/veggiemonk/jennifer/jen"
 )
 
 func hints(w io.Writer, pkg, name, goListPath, filter string, standard, novendor bool) error {
-
 	// notest
 
 	file := NewFile(pkg)
@@ -35,7 +32,7 @@ func hints(w io.Writer, pkg, name, goListPath, filter string, standard, novendor
 		}
 	*/
 	file.Commentf("%s contains package name hints", name)
-	file.Var().Id(name).Op("=").Map(String()).String().Values(DictFunc(func(d Dict) {
+	file.Var().ID(name).Op("=").Map(String()).String().Values(DictFunc(func(d Dict) {
 		for path, name := range packages {
 			d[Lit(path)] = Lit(name)
 		}
@@ -45,7 +42,6 @@ func hints(w io.Writer, pkg, name, goListPath, filter string, standard, novendor
 }
 
 func getPackages(goListPath, filter string, standard, novendor bool) (map[string]string, error) {
-
 	// notest
 
 	r, err := regexp.Compile(filter)

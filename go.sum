@@ -1,0 +1,8 @@
+github.com/dave/gopackages v0.0.0-20250212082220-e38641800008 h1:DwnxhFOl2xVRQUGERZBAQigZBqs4WAiTirFAksGfhT8=
+github.com/dave/gopackages v0.0.0-20250212082220-e38641800008/go.mod h1:i00+b/gKdIDIxuLDFob7ustLAVqhsZRk2qVZrArELGQ=
+github.com/dave/jennifer v1.7.1 h1:B4jJJDHelWcDhlRQxWeo0Npa/pYKBLrirAQoTN45txo=
+github.com/dave/jennifer v1.7.1/go.mod h1:nXbxhEmQfOZhWml3D1cDK5M1FLnMSozpbFN/m3RmGZc=
+github.com/dave/kerr v0.0.0-20230520060319-776b4fd985da h1:zEO+rDPcT7lA8/DBK5Az8zpBZUdJS0qSNBwWjTHw24g=
+github.com/dave/kerr v0.0.0-20230520060319-776b4fd985da/go.mod h1:qZqlPyPvfsDJt+3wHJ1EvSXDuVjFTK0j2p/ca+gtsb8=
+github.com/dave/rebecca v0.9.2 h1:HlMFLe42o1Qd6d6k9QZnl2YHme+Uew2ZdP0B8+HGbXY=
+github.com/dave/rebecca v0.9.2/go.mod h1:N6XYdMD/OKw3lkF3ywh8Z6wPGuwNFDNtWYEMFWEmXBA=

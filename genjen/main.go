@@ -11,7 +11,7 @@ func main() {
 	if err := render(buf); err != nil {
 		panic(err)
 	}
-	if err := os.WriteFile("./jen/generated.go", buf.Bytes(), 0644); err != nil {
+	if err := os.WriteFile("./jen/generated.go", buf.Bytes(), 0o644); err != nil {
 		panic(err)
 	}
 }

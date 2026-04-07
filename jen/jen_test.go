@@ -6,7 +6,7 @@ import (
 	"strings"
 	"testing"
 
-	. "github.com/dave/jennifer/jen"
+	. "github.com/veggiemonk/jennifer/jen"
 )
 
 var o1 = Options{
@@ -26,8 +26,8 @@ var o2 = Options{
 var cases = []tc{
 	{
 		desc: `union_group`,
-		code: Type().Id("A").InterfaceFunc(func(g *Group) {
-			g.Union(Id("A"), Id("B"))
+		code: Type().ID("A").InterfaceFunc(func(g *Group) {
+			g.Union(ID("A"), ID("B"))
 		}),
 		expect: `type A interface{
 			A|B
@@ -35,10 +35,10 @@ var cases = []tc{
 	},
 	{
 		desc: `union_group_func`,
-		code: Type().Id("A").InterfaceFunc(func(g1 *Group) {
+		code: Type().ID("A").InterfaceFunc(func(g1 *Group) {
 			g1.UnionFunc(func(g2 *Group) {
-				g2.Id("A")
-				g2.Id("B")
+				g2.ID("A")
+				g2.ID("B")
 			})
 		}),
 		expect: `type A interface{
@@ -47,16 +47,16 @@ var cases = []tc{
 	},
 	{
 		desc: `union`,
-		code: Type().Id("A").Interface(Union(Id("A"), Id("B"))),
+		code: Type().ID("A").Interface(Union(ID("A"), ID("B"))),
 		expect: `type A interface{
 			A|B
 		}`,
 	},
 	{
 		desc: `unionFunc`,
-		code: Type().Id("A").Interface(UnionFunc(func(g *Group) {
-			g.Id("A")
-			g.Id("B")
+		code: Type().ID("A").Interface(UnionFunc(func(g *Group) {
+			g.ID("A")
+			g.ID("B")
 		})),
 		expect: `type A interface{
 			A|B
@@ -64,17 +64,17 @@ var cases = []tc{
 	},
 	{
 		desc:   `types1`,
-		code:   Func().Id("A").Types(Id("K").Comparable(), Id("V").Any()).Params(),
+		code:   Func().ID("A").Types(ID("K").Comparable(), ID("V").Any()).Params(),
 		expect: `func A[K comparable, V any]()`,
 	},
 	{
 		desc:   `types2`,
-		code:   Func().Id("A").Types(Id("T1"), Id("T2").Any()).Params(),
+		code:   Func().ID("A").Types(ID("T1"), ID("T2").Any()).Params(),
 		expect: `func A[T1, T2 any]()`,
 	},
 	{
 		desc:   `types func`,
-		code:   Func().Id("A").Add(Types(Id("T1"), Id("T2").Any())).Params(),
+		code:   Func().ID("A").Add(Types(ID("T1"), ID("T2").Any())).Params(),
 		expect: `func A[T1, T2 any]()`,
 	},
 	{
@@ -96,21 +96,21 @@ var cases = []tc{
 		desc: `custom func group`,
 		code: ListFunc(func(g *Group) {
 			g.CustomFunc(o2, func(g *Group) {
-				g.Id("a")
-				g.Id("b")
-				g.Id("c")
+				g.ID("a")
+				g.ID("b")
+				g.ID("c")
 			})
-		}).Op("=").Id("foo").Call(),
+		}).Op("=").ID("foo").Call(),
 		expect: `a, b, c = foo()`,
 	},
 	{
 		desc:   `custom group`,
-		code:   ListFunc(func(g *Group) { g.Custom(o2, Id("a"), Id("b"), Id("c")) }).Op("=").Id("foo").Call(),
+		code:   ListFunc(func(g *Group) { g.Custom(o2, ID("a"), ID("b"), ID("c")) }).Op("=").ID("foo").Call(),
 		expect: `a, b, c = foo()`,
 	},
 	{
 		desc: `custom function`,
-		code: Id("foo").Add(Custom(o1, Lit("a"), Lit("b"), Lit("c"))),
+		code: ID("foo").Add(Custom(o1, Lit("a"), Lit("b"), Lit("c"))),
 		expect: `foo(
 			"a",
 			"b",
@@ -119,7 +119,7 @@ var cases = []tc{
 	},
 	{
 		desc: `custom function`,
-		code: Id("foo").Add(Custom(o1, Lit("a"), Lit("b"), Lit("c"))),
+		code: ID("foo").Add(Custom(o1, Lit("a"), Lit("b"), Lit("c"))),
 		expect: `foo(
 			"a",
 			"b",
@@ -147,9 +147,9 @@ var cases = []tc{
 	{
 		desc: `line group`,
 		code: BlockFunc(func(g *Group) {
-			g.Id("a")
+			g.ID("a")
 			g.Line()
-			g.Id("b")
+			g.ID("b")
 		}),
 		expect: `{
 		a
@@ -160,7 +160,7 @@ var cases = []tc{
 	{
 		desc: `op group`,
 		code: BlockFunc(func(g *Group) {
-			g.Op("*").Id("a")
+			g.Op("*").ID("a")
 		}),
 		expect: `{*a}`,
 	},
@@ -221,7 +221,7 @@ var cases = []tc{
 	{
 		desc: `litfunc group`,
 		code: BlockFunc(func(g *Group) {
-			g.LitFunc(func() interface{} {
+			g.LitFunc(func() any {
 				return 1 + 1
 			})
 		}),
@@ -229,7 +229,7 @@ var cases = []tc{
 	},
 	{
 		desc: `litfunc func`,
-		code: LitFunc(func() interface{} {
+		code: LitFunc(func() any {
 			return 1 + 1
 		}),
 		expect: `2`,
@@ -298,7 +298,7 @@ var cases = []tc{
 	},
 	{
 		desc:   `simple id`,
-		code:   Id("a"),
+		code:   ID("a"),
 		expect: `a`,
 	},
 	{
@@ -311,39 +311,39 @@ var cases = []tc{
 	},
 	{
 		desc:   `var decl`,
-		code:   Var().Id("a").Op("=").Lit("b"),
+		code:   Var().ID("a").Op("=").Lit("b"),
 		expect: `var a = "b"`,
 	},
 	{
 		desc:   `short var decl`,
-		code:   Id("a").Op(":=").Lit("b"),
+		code:   ID("a").Op(":=").Lit("b"),
 		expect: `a := "b"`,
 	},
 	{
 		desc:   `simple if`,
-		code:   If(Id("a").Op("==").Lit("b")).Block(),
+		code:   If(ID("a").Op("==").Lit("b")).Block(),
 		expect: `if a == "b" {}`,
 	},
 	{
 		desc: `simple if`,
-		code: If(Id("a").Op("==").Lit("b")).Block(
-			Id("a").Op("++"),
+		code: If(ID("a").Op("==").Lit("b")).Block(
+			ID("a").Op("++"),
 		),
 		expect: `if a == "b" { a++ }`,
 	},
 	{
 		desc:   `pointer`,
-		code:   Op("*").Id("a"),
+		code:   Op("*").ID("a"),
 		expect: `*a`,
 	},
 	{
 		desc:   `address`,
-		code:   Op("&").Id("a"),
+		code:   Op("&").ID("a"),
 		expect: `&a`,
 	},
 	{
 		desc: `simple call`,
-		code: Id("a").Call(
+		code: ID("a").Call(
 			Lit("b"),
 			Lit("c"),
 		),
@@ -353,13 +353,13 @@ var cases = []tc{
 		desc: `call fmt.Sprintf`,
 		code: Qual("fmt", "Sprintf").Call(
 			Lit("b"),
-			Id("c"),
+			ID("c"),
 		),
 		expect: `fmt.Sprintf("b", c)`,
 	},
 	{
 		desc: `slices`,
-		code: Id("a").Index(
+		code: ID("a").Index(
 			Lit(1),
 			Empty(),
 		),
@@ -367,20 +367,20 @@ var cases = []tc{
 	},
 	{
 		desc:   `return`,
-		code:   Return(Id("a")),
+		code:   Return(ID("a")),
 		expect: `return a`,
 	},
 	{
 		desc:   `double return`,
-		code:   Return(Id("a"), Id("b")),
+		code:   Return(ID("a"), ID("b")),
 		expect: `return a, b`,
 	},
 	{
 		desc: `func`,
-		code: Func().Id("a").Params(
-			Id("a").String(),
+		code: Func().ID("a").Params(
+			ID("a").String(),
 		).Block(
-			Return(Id("a")),
+			Return(ID("a")),
 		),
 		expect: `func a(a string){
 			return a
@@ -388,37 +388,37 @@ var cases = []tc{
 	},
 	{
 		desc:   `built in func`,
-		code:   New(Id("a")),
+		code:   New(ID("a")),
 		expect: `new(a)`,
 	},
 	{
 		desc:   `multip`,
-		code:   Id("a").Op("*").Id("b"),
+		code:   ID("a").Op("*").ID("b"),
 		expect: `a * b`,
 	},
 	{
 		desc:   `multip ptr`,
-		code:   Id("a").Op("*").Op("*").Id("b"),
+		code:   ID("a").Op("*").Op("*").ID("b"),
 		expect: `a * *b`,
 	},
 	{
 		desc:   `field`,
-		code:   Id("a").Dot("b"),
+		code:   ID("a").Dot("b"),
 		expect: `a.b`,
 	},
 	{
 		desc:   `method`,
-		code:   Id("a").Dot("b").Call(Id("c"), Id("d")),
+		code:   ID("a").Dot("b").Call(ID("c"), ID("d")),
 		expect: `a.b(c, d)`,
 	},
 	{
 		desc: `if else`,
-		code: If(Id("a").Op("==").Lit(1)).Block(
-			Id("b").Op("=").Lit(1),
-		).Else().If(Id("a").Op("==").Lit(2)).Block(
-			Id("b").Op("=").Lit(2),
+		code: If(ID("a").Op("==").Lit(1)).Block(
+			ID("b").Op("=").Lit(1),
+		).Else().If(ID("a").Op("==").Lit(2)).Block(
+			ID("b").Op("=").Lit(2),
 		).Else().Block(
-			Id("b").Op("=").Lit(3),
+			ID("b").Op("=").Lit(3),
 		),
 		expect: `if a == 1 { b = 1 } else if a == 2 { b = 2 } else { b = 3 }`,
 	},
@@ -434,30 +434,30 @@ var cases = []tc{
 	},
 	{
 		desc:   `null`,
-		code:   Id("a").Params(Id("b"), Null(), Id("c")),
+		code:   ID("a").Params(ID("b"), Null(), ID("c")),
 		expect: `a(b, c)`,
 	},
 	{
 		desc: `map literal single`,
-		code: Id("a").Values(Dict{
-			Id("b"): Id("c"),
+		code: ID("a").Values(Dict{
+			ID("b"): ID("c"),
 		}),
 		expect: `a{b: c}`,
 	},
 	{
 		desc: `map literal null`,
-		code: Id("a").Values(Dict{
-			Null():  Id("c"),
-			Id("b"): Null(),
-			Id("b"): Id("c"),
+		code: ID("a").Values(Dict{
+			Null():  ID("c"),
+			ID("b"): Null(),
+			ID("b"): ID("c"),
 		}),
 		expect: `a{b: c}`,
 	},
 	{
 		desc: `map literal multiple`,
-		code: Id("a").Values(Dict{
-			Id("b"): Id("c"),
-			Id("d"): Id("e"),
+		code: ID("a").Values(Dict{
+			ID("b"): ID("c"),
+			ID("d"): ID("e"),
 		}),
 		expect: `a{
 			b: c,
@@ -466,25 +466,25 @@ var cases = []tc{
 	},
 	{
 		desc: `map literal func single`,
-		code: Id("a").Values(DictFunc(func(d Dict) {
-			d[Id("b")] = Id("c")
+		code: ID("a").Values(DictFunc(func(d Dict) {
+			d[ID("b")] = ID("c")
 		})),
 		expect: `a{b: c}`,
 	},
 	{
 		desc: `map literal func single null`,
-		code: Id("a").Values(DictFunc(func(d Dict) {
-			d[Null()] = Id("c")
-			d[Id("b")] = Null()
-			d[Id("b")] = Id("c")
+		code: ID("a").Values(DictFunc(func(d Dict) {
+			d[Null()] = ID("c")
+			d[ID("b")] = Null()
+			d[ID("b")] = ID("c")
 		})),
 		expect: `a{b: c}`,
 	},
 	{
 		desc: `map literal func multiple`,
-		code: Id("a").Values(DictFunc(func(d Dict) {
-			d[Id("b")] = Id("c")
-			d[Id("d")] = Id("e")
+		code: ID("a").Values(DictFunc(func(d Dict) {
+			d[ID("b")] = ID("c")
+			d[ID("d")] = ID("e")
 		})),
 		expect: `a{
 			b: c,
@@ -493,19 +493,19 @@ var cases = []tc{
 	},
 	{
 		desc: `literal func`,
-		code: Id("a").Op(":=").LitFunc(func() interface{} {
+		code: ID("a").Op(":=").LitFunc(func() any {
 			return "b"
 		}),
 		expect: `a := "b"`,
 	},
 	{
 		desc:   `dot`,
-		code:   Id("a").Dot("b").Dot("c"),
+		code:   ID("a").Dot("b").Dot("c"),
 		expect: `a.b.c`,
 	},
 	{
 		desc:   `do`,
-		code:   Id("a").Do(func(s *Statement) { s.Dot("b") }),
+		code:   ID("a").Do(func(s *Statement) { s.Dot("b") }),
 		expect: `a.b`,
 	},
 	{
@@ -515,7 +515,7 @@ var cases = []tc{
 	},
 	{
 		desc: `dict should be ordered`,
-		code: Map(String()).Int().Values(Dict{Id("z"): Lit(1), Id("a"): Lit(2)}),
+		code: Map(String()).Int().Values(Dict{ID("z"): Lit(1), ID("a"): Lit(2)}),
 		expect: `map[string]int{
 		a:2, 
 		z:1,
@@ -556,7 +556,7 @@ func caseTester(t *testing.T, cases []tc) {
 // a test case
 type tc struct {
 	// path
-	path string
+	// path string
 	// description for locating the test case
 	desc string
 	// code to generate
@@ -569,7 +569,7 @@ type tc struct {
 
 func TestNilStatement(t *testing.T) {
 	var s *Statement
-	c := Func().Id("a").Params(
+	c := Func().ID("a").Params(
 		s,
 	)
 	got := fmt.Sprintf("%#v", c)
@@ -581,7 +581,7 @@ func TestNilStatement(t *testing.T) {
 
 func TestNilGroup(t *testing.T) {
 	var g *Group
-	c := Func().Id("a").Params(
+	c := Func().ID("a").Params(
 		g,
 	)
 	got := fmt.Sprintf("%#v", c)

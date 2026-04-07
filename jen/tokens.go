@@ -10,9 +10,9 @@ import (
 type tokenType string
 
 const (
-	packageToken     tokenType = "package"
-	identifierToken  tokenType = "identifier"
-	qualifiedToken   tokenType = "qualified"
+	packageToken    tokenType = "package"
+	identifierToken tokenType = "identifier"
+	// qualifiedToken   tokenType = "qualified"
 	keywordToken     tokenType = "keyword"
 	operatorToken    tokenType = "operator"
 	delimiterToken   tokenType = "delimiter"
@@ -25,7 +25,7 @@ const (
 
 type token struct {
 	typ     tokenType
-	content interface{}
+	content any
 }
 
 func (t token) isNull(f *File) bool {
@@ -50,7 +50,7 @@ func (t token) render(f *File, w io.Writer, s *Statement) error {
 				// If the formatted value is not in scientific notation, and does not have a dot, then
 				// we add ".0". Otherwise it will be interpreted as an int.
 				// See:
-				// https://github.com/dave/jennifer/issues/39
+				// https://github.com/veggiemonk/jennifer/issues/39
 				// https://github.com/golang/go/issues/26363
 				out += ".0"
 			}
@@ -71,11 +71,11 @@ func (t token) render(f *File, w io.Writer, s *Statement) error {
 			return err
 		}
 	case literalByteToken:
-		if _, err := w.Write([]byte(fmt.Sprintf("byte(%#v)", t.content))); err != nil {
+		if _, err := fmt.Fprintf(w, "byte(%#v)", t.content); err != nil {
 			return err
 		}
 	case keywordToken, operatorToken, layoutToken, delimiterToken:
-		if _, err := w.Write([]byte(fmt.Sprintf("%s", t.content))); err != nil {
+		if _, err := fmt.Fprintf(w, "%s", t.content); err != nil {
 			return err
 		}
 		if t.content.(string) == "default" {
@@ -201,20 +201,20 @@ func (s *Statement) Dot(name string) *Statement {
 	return s
 }
 
-// Id renders an identifier.
-func Id(name string) *Statement {
-	return newStatement().Id(name)
+// ID renders an identifier.
+func ID(name string) *Statement {
+	return newStatement().ID(name)
 }
 
-// Id renders an identifier.
-func (g *Group) Id(name string) *Statement {
-	s := Id(name)
+// ID renders an identifier.
+func (g *Group) ID(name string) *Statement {
+	s := ID(name)
 	g.items = append(g.items, s)
 	return s
 }
 
-// Id renders an identifier.
-func (s *Statement) Id(name string) *Statement {
+// ID renders an identifier.
+func (s *Statement) ID(name string) *Statement {
 	t := token{
 		typ:     identifierToken,
 		content: name,

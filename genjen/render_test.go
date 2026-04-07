@@ -1,15 +1,13 @@
 package main
 
 import (
+	"bytes"
 	"os"
 	"regexp"
 	"testing"
-
-	"bytes"
 )
 
 func TestRender(t *testing.T) {
-
 	buf := &bytes.Buffer{}
 	if err := render(buf); err != nil {
 		t.Fatal(err.Error())
