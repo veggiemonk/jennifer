@@ -9,6 +9,7 @@ import (
 	"os"
 	"sort"
 	"strconv"
+	"strings"
 )
 
 // Code represents an item of code that can be rendered.
@@ -22,10 +23,10 @@ func (f *File) Save(filename string) error {
 	// notest
 	buf := &bytes.Buffer{}
 	if err := f.Render(buf); err != nil {
-		return err
+		return fmt.Errorf("saving %s: %w", filename, err)
 	}
 	if err := os.WriteFile(filename, buf.Bytes(), 0o644); err != nil {
-		return err
+		return fmt.Errorf("writing %s: %w", filename, err)
 	}
 	return nil
 }
@@ -34,7 +35,7 @@ func (f *File) Save(filename string) error {
 func (f *File) Render(w io.Writer) error {
 	body := &bytes.Buffer{}
 	if err := f.render(f, body, nil); err != nil {
-		return err
+		return fmt.Errorf("rendering body: %w", err)
 	}
 	source := &bytes.Buffer{}
 	if len(f.headers) > 0 {
@@ -84,7 +85,7 @@ func (f *File) Render(w io.Writer) error {
 		var err error
 		output, err = format.Source(source.Bytes())
 		if err != nil {
-			return fmt.Errorf("Error %s while formatting source:\n%s", err, source.String())
+			return fmt.Errorf("formatting generated source: %w\n%s", err, numberLines(source.String()))
 		}
 	}
 	if _, err := w.Write(output); err != nil {
@@ -169,4 +170,15 @@ func (f *File) renderImports(source io.Writer) error {
 	}
 
 	return nil
+}
+
+// numberLines prefixes each line with its line number for readable error output.
+func numberLines(src string) string {
+	lines := strings.Split(src, "\n")
+	width := len(strconv.Itoa(len(lines)))
+	var b strings.Builder
+	for i, line := range lines {
+		fmt.Fprintf(&b, "%*d| %s\n", width, i+1, line)
+	}
+	return b.String()
 }

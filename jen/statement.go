@@ -87,11 +87,11 @@ func (s *Statement) GoString() string {
 func (s *Statement) RenderWithFile(writer io.Writer, file *File) error {
 	buf := &bytes.Buffer{}
 	if err := s.render(file, buf, nil); err != nil {
-		return err
+		return fmt.Errorf("rendering statement: %w", err)
 	}
 	b, err := format.Source(buf.Bytes())
 	if err != nil {
-		return fmt.Errorf("Error %s while formatting source:\n%s", err, buf.String())
+		return fmt.Errorf("formatting generated source: %w\n%s", err, numberLines(buf.String()))
 	}
 	if _, err := writer.Write(b); err != nil {
 		return err
