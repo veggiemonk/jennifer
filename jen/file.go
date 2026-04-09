@@ -181,7 +181,8 @@ func (f *File) register(path string) string {
 
 	// make unique
 	unique := name
-	for i := 0; !f.isValidAlias(unique); i++ {
+	i := 0
+	for !f.isValidAlias(unique) {
 		i++
 		unique = fmt.Sprintf("%s%d", name, i)
 		alias = true
