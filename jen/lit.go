@@ -3,14 +3,14 @@ package jen
 // Lit renders a literal. Lit supports only built-in types (bool, string, int, complex128, float64,
 // float32, int8, int16, int32, int64, uint, uint8, uint16, uint32, uint64, uintptr and complex64).
 // Passing any other type will panic.
-func Lit(v interface{}) *Statement {
+func Lit(v any) *Statement {
 	return newStatement().Lit(v)
 }
 
 // Lit renders a literal. Lit supports only built-in types (bool, string, int, complex128, float64,
 // float32, int8, int16, int32, int64, uint, uint8, uint16, uint32, uint64, uintptr and complex64).
 // Passing any other type will panic.
-func (g *Group) Lit(v interface{}) *Statement {
+func (g *Group) Lit(v any) *Statement {
 	s := Lit(v)
 	g.items = append(g.items, s)
 	return s
@@ -19,7 +19,7 @@ func (g *Group) Lit(v interface{}) *Statement {
 // Lit renders a literal. Lit supports only built-in types (bool, string, int, complex128, float64,
 // float32, int8, int16, int32, int64, uint, uint8, uint16, uint32, uint64, uintptr and complex64).
 // Passing any other type will panic.
-func (s *Statement) Lit(v interface{}) *Statement {
+func (s *Statement) Lit(v any) *Statement {
 	t := token{
 		typ:     literalToken,
 		content: v,
@@ -32,7 +32,7 @@ func (s *Statement) Lit(v interface{}) *Statement {
 // function. LitFunc supports only built-in types (bool, string, int, complex128, float64, float32,
 // int8, int16, int32, int64, uint, uint8, uint16, uint32, uint64, uintptr and complex64).
 // Returning any other type will panic.
-func LitFunc(f func() interface{}) *Statement {
+func LitFunc(f func() any) *Statement {
 	return newStatement().LitFunc(f)
 }
 
@@ -40,7 +40,7 @@ func LitFunc(f func() interface{}) *Statement {
 // function. LitFunc supports only built-in types (bool, string, int, complex128, float64, float32,
 // int8, int16, int32, int64, uint, uint8, uint16, uint32, uint64, uintptr and complex64).
 // Returning any other type will panic.
-func (g *Group) LitFunc(f func() interface{}) *Statement {
+func (g *Group) LitFunc(f func() any) *Statement {
 	s := LitFunc(f)
 	g.items = append(g.items, s)
 	return s
@@ -50,7 +50,7 @@ func (g *Group) LitFunc(f func() interface{}) *Statement {
 // function. LitFunc supports only built-in types (bool, string, int, complex128, float64, float32,
 // int8, int16, int32, int64, uint, uint8, uint16, uint32, uint64, uintptr and complex64).
 // Returning any other type will panic.
-func (s *Statement) LitFunc(f func() interface{}) *Statement {
+func (s *Statement) LitFunc(f func() any) *Statement {
 	t := token{
 		typ:     literalToken,
 		content: f(),

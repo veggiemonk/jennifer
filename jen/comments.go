@@ -40,7 +40,7 @@ func (s *Statement) Comment(str string) *Statement {
 // the provided string contains a newline, the comment is formatted in
 // multiline style. If the comment string starts with "//" or "/*", the
 // automatic formatting is disabled and the string is rendered directly.
-func Commentf(format string, a ...interface{}) *Statement {
+func Commentf(format string, a ...any) *Statement {
 	return newStatement().Commentf(format, a...)
 }
 
@@ -48,7 +48,7 @@ func Commentf(format string, a ...interface{}) *Statement {
 // the provided string contains a newline, the comment is formatted in
 // multiline style. If the comment string starts with "//" or "/*", the
 // automatic formatting is disabled and the string is rendered directly.
-func (g *Group) Commentf(format string, a ...interface{}) *Statement {
+func (g *Group) Commentf(format string, a ...any) *Statement {
 	s := Commentf(format, a...)
 	g.items = append(g.items, s)
 	return s
@@ -58,7 +58,7 @@ func (g *Group) Commentf(format string, a ...interface{}) *Statement {
 // the provided string contains a newline, the comment is formatted in
 // multiline style. If the comment string starts with "//" or "/*", the
 // automatic formatting is disabled and the string is rendered directly.
-func (s *Statement) Commentf(format string, a ...interface{}) *Statement {
+func (s *Statement) Commentf(format string, a ...any) *Statement {
 	c := comment{
 		comment: fmt.Sprintf(format, a...),
 	}
