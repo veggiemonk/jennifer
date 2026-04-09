@@ -22,6 +22,8 @@ func TestGuessAlias(t *testing.T) {
 		"123a":          "a",
 		"a/321a.b":      "ab",
 		"a/123":         "pkg",
+		"x/any":         "any",
+		"x/comparable":  "comparable",
 	}
 	for path, expected := range data {
 		if guessAlias(path) != expected {
@@ -31,13 +33,24 @@ func TestGuessAlias(t *testing.T) {
 	}
 }
 
+func TestReservedWordIncludesAnyAndComparable(t *testing.T) {
+	if !IsReservedWord("any") {
+		t.Error("IsReservedWord(\"any\") should return true")
+	}
+	if !IsReservedWord("comparable") {
+		t.Error("IsReservedWord(\"comparable\") should return true")
+	}
+}
+
 func TestValidAlias(t *testing.T) {
 	data := map[string]bool{
-		"a":   true,  // ok
-		"b":   false, // already registered
-		"go":  false, // keyword
-		"int": false, // predeclared
-		"err": false, // common name
+		"a":          true,  // ok
+		"b":          false, // already registered
+		"go":         false, // keyword
+		"int":        false, // predeclared
+		"err":        false, // common name
+		"any":        false, // predeclared type alias
+		"comparable": false, // predeclared constraint
 	}
 	f := NewFile("test")
 	f.register("b")

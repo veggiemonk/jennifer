@@ -9,6 +9,8 @@ import (
 	"unicode/utf8"
 )
 
+var nonAlphanumRegex = regexp.MustCompile(`[^a-z0-9]`)
+
 // NewFile Creates a new file, with the specified package name.
 func NewFile(packageName string) *File {
 	return &File{
@@ -234,8 +236,7 @@ func guessAlias(path string) string {
 	// alias should be lower case
 	alias = strings.ToLower(alias)
 	// alias should now only contain alphanumerics
-	importsRegex := regexp.MustCompile(`[^a-z0-9]`)
-	alias = importsRegex.ReplaceAllString(alias, "")
+	alias = nonAlphanumRegex.ReplaceAllString(alias, "")
 	// can't have a first digit, per Go identifier rules, so just skip them
 	for firstRune, runeLen := utf8.DecodeRuneInString(alias); unicode.IsDigit(firstRune); firstRune, runeLen = utf8.DecodeRuneInString(alias) {
 		alias = alias[runeLen:]

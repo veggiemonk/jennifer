@@ -6,12 +6,12 @@ import (
 	"sort"
 )
 
-// Dict renders as key/value pairs. Use with Values for map or composite
-// literals.
+// Dict renders as key/value pairs.
+// Use with Values for map or composite literals.
 type Dict map[Code]Code
 
-// DictFunc executes a func(Dict) to generate the value. Use with Values for
-// map or composite literals.
+// DictFunc executes a func(Dict) to generate the value.
+// Use with Values for map or composite literals.
 func DictFunc(f func(Dict)) Dict {
 	d := Dict{}
 	f(d)
@@ -72,8 +72,7 @@ func (d Dict) isNull(f *File) bool {
 	}
 	for k, v := range d {
 		if !k.isNull(f) && !v.isNull(f) {
-			// if any of the key/value pairs are both not null, the Dict is not
-			// null
+			// if any of the key/value pairs are both not null, the Dict is not null
 			return false
 		}
 	}

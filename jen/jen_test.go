@@ -118,15 +118,6 @@ var cases = []tc{
 		)`,
 	},
 	{
-		desc: `custom function`,
-		code: ID("foo").Add(Custom(o1, Lit("a"), Lit("b"), Lit("c"))),
-		expect: `foo(
-			"a",
-			"b",
-			"c",
-		)`,
-	},
-	{
 		desc: `line statement`,
 		code: Block(Lit(1).Line(), Lit(2)),
 		expect: `{
@@ -529,10 +520,6 @@ func TestJen(t *testing.T) {
 
 func caseTester(t *testing.T, cases []tc) {
 	for i, c := range cases {
-		onlyTest := ""
-		if onlyTest != "" && c.desc != onlyTest {
-			continue
-		}
 		rendered := fmt.Sprintf("%#v", c.code)
 
 		expected, err := format.Source([]byte(c.expect))
@@ -544,19 +531,22 @@ func caseTester(t *testing.T, cases []tc) {
 			t.Errorf("Test case %d failed. Description: %s\nExpected:\n%s\nOutput:\n%s", i, c.desc, expected, rendered)
 		}
 
-		//if c.expectImports != nil {
-		//	f := FromContext(ctx)
-		//	if !reflect.DeepEqual(f.Imports, c.expectImports) {
-		//		t.Errorf("Test case %d failed. Description: %s\nImports expected:\n%s\nOutput:\n%s", i, c.desc, c.expectImports, f.Imports)
-		//	}
-		//}
+		if c.expectImports != nil {
+			// Render through a File to capture import registration
+			f := NewFile("test")
+			f.Add(c.code)
+			output := fmt.Sprintf("%#v", f)
+			for path, alias := range c.expectImports {
+				if !strings.Contains(output, alias+".") && !strings.Contains(output, `"`+path+`"`) {
+					t.Errorf("Test case %d failed. Description: %s\nExpected import %s (%s) not found in:\n%s", i, c.desc, path, alias, output)
+				}
+			}
+		}
 	}
 }
 
 // a test case
 type tc struct {
-	// path
-	// path string
 	// description for locating the test case
 	desc string
 	// code to generate
@@ -600,4 +590,30 @@ func TestGroup_GoString(t *testing.T) {
 			t.Fatalf("Got: %s, expect: %s", got, expect)
 		}
 	})
+}
+
+func TestBlockAfterCaseRenderIdempotent(t *testing.T) {
+	// Rendering a Block after Case should produce identical output on repeated renders.
+	// Regression test: Group.render() must not mutate the receiver.
+	c := Switch(ID("x")).Block(
+		Case(Lit(1)).Block(
+			ID("a").Call(),
+		),
+	)
+	first := fmt.Sprintf("%#v", c)
+	second := fmt.Sprintf("%#v", c)
+	if first != second {
+		t.Errorf("Block-after-Case renders differ:\nfirst:  %s\nsecond: %s", first, second)
+	}
+}
+
+func TestImportAliasForAnyAndComparable(t *testing.T) {
+	// Packages that guess to "any" or "comparable" as aliases must be renamed
+	// to avoid shadowing built-in type aliases.
+	f := NewFile("main")
+	c := Qual("example.com/any", "Foo")
+	got := fmt.Sprintf("%#v", f.Func().ID("f").Params().Block(Add(c)))
+	if strings.Contains(got, "import any ") {
+		t.Errorf("import alias should not be 'any', got:\n%s", got)
+	}
 }

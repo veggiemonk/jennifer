@@ -42,19 +42,21 @@ func (g *Group) render(f *File, w io.Writer, s *Statement) error {
 		// Special case for types - if all items are null, don't render the open/close tokens.
 		return nil
 	}
+	open := g.open
+	close := g.close
 	if g.name == "block" && s != nil {
-		// Special CaseBlock format for then the previous item in the statement
-		// is a Case group or the default keyword.
+		// Special CaseBlock format: when the previous item in the statement
+		// is a Case group or the default keyword, omit braces.
 		prev := s.previous(g)
 		grp, isGrp := prev.(*Group)
 		tkn, isTkn := prev.(token)
-		if isGrp && grp.name == "case" || isTkn && tkn.content == "default" {
-			g.open = ""
-			g.close = ""
+		if (isGrp && grp.name == "case") || (isTkn && tkn.content == "default") {
+			open = ""
+			close = ""
 		}
 	}
-	if g.open != "" {
-		if _, err := w.Write([]byte(g.open)); err != nil {
+	if open != "" {
+		if _, err := w.Write([]byte(open)); err != nil {
 			return err
 		}
 	}
@@ -62,7 +64,7 @@ func (g *Group) render(f *File, w io.Writer, s *Statement) error {
 	if err != nil {
 		return err
 	}
-	if !isNull && g.multi && g.close != "" {
+	if !isNull && g.multi && close != "" {
 		// For multi-line blocks with a closing token, we insert a new line after the last item (but
 		// not if all items were null). This is to ensure that if the statement finishes with a comment,
 		// the closing token is not commented out.
@@ -75,8 +77,8 @@ func (g *Group) render(f *File, w io.Writer, s *Statement) error {
 			return err
 		}
 	}
-	if g.close != "" {
-		if _, err := w.Write([]byte(g.close)); err != nil {
+	if close != "" {
+		if _, err := w.Write([]byte(close)); err != nil {
 			return err
 		}
 	}

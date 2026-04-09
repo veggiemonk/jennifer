@@ -502,8 +502,8 @@ fmt.Printf("%#v", c)
 // []string{"a", "b"}
 ```
 
-Dict renders as key/value pairs. Use with Values for map or composite
-literals.
+Dict renders as key/value pairs.
+Use with Values for map or composite literals.
 
 ```go
 c := Map(String()).String().Values(Dict{
