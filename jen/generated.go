@@ -1043,19 +1043,19 @@ func (s *Statement) MaxFunc(f func(*Group)) *Statement {
 }
 
 // Complex renders the complex built-in function.
-func Complex(r Code, i Code) *Statement {
+func Complex(r, i Code) *Statement {
 	return newStatement().Complex(r, i)
 }
 
 // Complex renders the complex built-in function.
-func (g *Group) Complex(r Code, i Code) *Statement {
+func (g *Group) Complex(r, i Code) *Statement {
 	s := Complex(r, i)
 	g.items = append(g.items, s)
 	return s
 }
 
 // Complex renders the complex built-in function.
-func (s *Statement) Complex(r Code, i Code) *Statement {
+func (s *Statement) Complex(r, i Code) *Statement {
 	g := &Group{
 		close:     ")",
 		items:     []Code{r, i},
@@ -1069,19 +1069,19 @@ func (s *Statement) Complex(r Code, i Code) *Statement {
 }
 
 // Copy renders the copy built-in function.
-func Copy(dst Code, src Code) *Statement {
+func Copy(dst, src Code) *Statement {
 	return newStatement().Copy(dst, src)
 }
 
 // Copy renders the copy built-in function.
-func (g *Group) Copy(dst Code, src Code) *Statement {
+func (g *Group) Copy(dst, src Code) *Statement {
 	s := Copy(dst, src)
 	g.items = append(g.items, s)
 	return s
 }
 
 // Copy renders the copy built-in function.
-func (s *Statement) Copy(dst Code, src Code) *Statement {
+func (s *Statement) Copy(dst, src Code) *Statement {
 	g := &Group{
 		close:     ")",
 		items:     []Code{dst, src},
@@ -1095,19 +1095,19 @@ func (s *Statement) Copy(dst Code, src Code) *Statement {
 }
 
 // Delete renders the delete built-in function.
-func Delete(m Code, key Code) *Statement {
+func Delete(m, key Code) *Statement {
 	return newStatement().Delete(m, key)
 }
 
 // Delete renders the delete built-in function.
-func (g *Group) Delete(m Code, key Code) *Statement {
+func (g *Group) Delete(m, key Code) *Statement {
 	s := Delete(m, key)
 	g.items = append(g.items, s)
 	return s
 }
 
 // Delete renders the delete built-in function.
-func (s *Statement) Delete(m Code, key Code) *Statement {
+func (s *Statement) Delete(m, key Code) *Statement {
 	g := &Group{
 		close:     ")",
 		items:     []Code{m, key},
