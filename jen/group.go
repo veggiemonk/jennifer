@@ -43,16 +43,13 @@ func (g *Group) render(f *File, w io.Writer, s *Statement) error {
 		return nil
 	}
 	open := g.open
-	close := g.close
+	closeTok := g.close
 	if g.name == "block" && s != nil {
-		// Special CaseBlock format: when the previous item in the statement
-		// is a Case group or the default keyword, omit braces.
+		// When a block follows a Case or Default group, omit braces (switch/select syntax).
 		prev := s.previous(g)
-		grp, isGrp := prev.(*Group)
-		tkn, isTkn := prev.(token)
-		if (isGrp && grp.name == "case") || (isTkn && tkn.content == "default") {
+		if grp, ok := prev.(*Group); ok && (grp.name == "case" || grp.name == "default") {
 			open = ""
-			close = ""
+			closeTok = ""
 		}
 	}
 	if open != "" {
@@ -64,21 +61,20 @@ func (g *Group) render(f *File, w io.Writer, s *Statement) error {
 	if err != nil {
 		return err
 	}
-	if !isNull && g.multi && close != "" {
-		// For multi-line blocks with a closing token, we insert a new line after the last item (but
-		// not if all items were null). This is to ensure that if the statement finishes with a comment,
-		// the closing token is not commented out.
-		s := "\n"
+	if !isNull && g.multi && closeTok != "" {
+		// For multi-line blocks with a closing token, insert a newline after the last item
+		// (but not if all items were null). This ensures a trailing comment doesn't
+		// swallow the closing token.
+		sep := "\n"
 		if g.separator == "," {
-			// We also insert add trailing comma if the separator was ",".
-			s = ",\n"
+			sep = ",\n"
 		}
-		if _, err := w.Write([]byte(s)); err != nil {
+		if _, err := w.Write([]byte(sep)); err != nil {
 			return err
 		}
 	}
-	if close != "" {
-		if _, err := w.Write([]byte(close)); err != nil {
+	if closeTok != "" {
+		if _, err := w.Write([]byte(closeTok)); err != nil {
 			return err
 		}
 	}
@@ -88,16 +84,7 @@ func (g *Group) render(f *File, w io.Writer, s *Statement) error {
 func (g *Group) renderItems(f *File, w io.Writer) (isNull bool, err error) {
 	first := true
 	for _, code := range g.items {
-		if pt, ok := code.(token); ok && pt.typ == packageToken {
-			// Special case for package tokens in Qual groups - for dot-imports, the package token
-			// will be null, so will not render and will not be registered in the imports block.
-			// This ensures all packageTokens that are rendered are registered.
-			f.register(pt.content.(string))
-		}
 		if code == nil || code.isNull(f) {
-			// Null() token produces no output but also
-			// no separator. Empty() token products no
-			// output but adds a separator.
 			continue
 		}
 		if g.name == "values" {
@@ -106,13 +93,11 @@ func (g *Group) renderItems(f *File, w io.Writer) (isNull bool, err error) {
 			}
 		}
 		if !first && g.separator != "" {
-			// The separator token is added before each non-null item, but not before the first item.
 			if _, err := w.Write([]byte(g.separator)); err != nil {
 				return false, err
 			}
 		}
 		if g.multi {
-			// For multi-line blocks, we insert a new line before each non-null item.
 			if _, err := w.Write([]byte("\n")); err != nil {
 				return false, err
 			}
@@ -153,4 +138,104 @@ func (g *Group) RenderWithFile(writer io.Writer, file *File) error {
 		return err
 	}
 	return nil
+}
+
+// --- Group operation helpers ---
+
+// groupOp defines the rendering configuration for a group-based operation.
+type groupOp struct {
+	open, close, sep string
+	multi            bool
+}
+
+// item adds a statement to the group and returns it for chaining.
+func (g *Group) item(s *Statement) *Statement {
+	g.items = append(g.items, s)
+	return s
+}
+
+// newGroup creates a new Statement containing a Group with the given configuration.
+func newGroup(name string, op groupOp, items []Code) *Statement {
+	return newStatement().addGroup(name, op, items)
+}
+
+// newGroupFunc creates a new Statement containing a Group populated by a callback.
+func newGroupFunc(name string, op groupOp, f func(*Group)) *Statement {
+	return newStatement().addGroupFunc(name, op, f)
+}
+
+// addGroup appends a Group with the given items to the statement.
+func (s *Statement) addGroup(name string, op groupOp, items []Code) *Statement {
+	g := &Group{
+		name:      name,
+		items:     items,
+		open:      op.open,
+		close:     op.close,
+		separator: op.sep,
+		multi:     op.multi,
+	}
+	*s = append(*s, g)
+	return s
+}
+
+// addGroupFunc appends a Group populated by a callback to the statement.
+func (s *Statement) addGroupFunc(name string, op groupOp, f func(*Group)) *Statement {
+	g := &Group{
+		name:      name,
+		open:      op.open,
+		close:     op.close,
+		separator: op.sep,
+		multi:     op.multi,
+	}
+	f(g)
+	*s = append(*s, g)
+	return s
+}
+
+// --- Options / Custom ---
+
+// Options specifies options for the Custom method.
+type Options struct {
+	Open      string
+	Close     string
+	Separator string
+	Multi     bool
+}
+
+// Custom renders a customized statement list. Pass in options to specify
+// multi-line, and tokens for open, close, separator.
+func Custom(options Options, statements ...Code) *Statement {
+	return newStatement().Custom(options, statements...)
+}
+
+func (g *Group) Custom(options Options, statements ...Code) *Statement {
+	return g.item(Custom(options, statements...))
+}
+
+func (s *Statement) Custom(options Options, statements ...Code) *Statement {
+	return s.addGroup("custom", groupOp{
+		open:  options.Open,
+		close: options.Close,
+		sep:   options.Separator,
+		multi: options.Multi,
+	}, statements)
+}
+
+// CustomFunc renders a customized statement list. Pass in options to specify
+// multi-line, and tokens for open, close, separator.
+func CustomFunc(options Options, f func(*Group)) *Statement {
+	return newStatement().CustomFunc(options, f)
+}
+
+func (g *Group) CustomFunc(options Options, f func(*Group)) *Statement {
+	return g.item(CustomFunc(options, f))
+}
+
+func (s *Statement) CustomFunc(options Options, f func(*Group)) *Statement {
+	return s.addGroupFunc("custom", groupOp{
+		open:  options.Open,
+		close: options.Close,
+		sep:   options.Separator,
+		multi: options.Multi,
+	}, f)
 }

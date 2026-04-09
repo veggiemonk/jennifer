@@ -3,7 +3,7 @@ package jen
 import (
 	"bytes"
 	"io"
-	"sort"
+	"slices"
 )
 
 // Dict renders as key/value pairs.
@@ -20,13 +20,12 @@ func DictFunc(f func(Dict)) Dict {
 
 func (d Dict) render(f *File, w io.Writer, s *Statement) error {
 	first := true
-	// must order keys to ensure repeatable source
 	type kv struct {
 		k Code
 		v Code
 	}
 	lookup := map[string]kv{}
-	keys := []string{}
+	keys := make([]string, 0, len(d))
 	for k, v := range d {
 		if k.isNull(f) || v.isNull(f) {
 			continue
@@ -35,10 +34,11 @@ func (d Dict) render(f *File, w io.Writer, s *Statement) error {
 		if err := k.render(f, buf, nil); err != nil {
 			return err
 		}
-		keys = append(keys, buf.String())
-		lookup[buf.String()] = kv{k: k, v: v}
+		key := buf.String()
+		keys = append(keys, key)
+		lookup[key] = kv{k: k, v: v}
 	}
-	sort.Strings(keys)
+	slices.Sort(keys)
 	for _, key := range keys {
 		k := lookup[key].k
 		v := lookup[key].v
@@ -72,7 +72,6 @@ func (d Dict) isNull(f *File) bool {
 	}
 	for k, v := range d {
 		if !k.isNull(f) && !v.isNull(f) {
-			// if any of the key/value pairs are both not null, the Dict is not null
 			return false
 		}
 	}

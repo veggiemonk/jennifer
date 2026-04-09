@@ -3,7 +3,12 @@ package jen
 import (
 	"bytes"
 	"fmt"
+	"go/format"
+	"io"
+	"os"
 	"regexp"
+	"slices"
+	"strconv"
 	"strings"
 	"unicode"
 	"unicode/utf8"
@@ -14,9 +19,7 @@ var nonAlphanumRegex = regexp.MustCompile(`[^a-z0-9]`)
 // NewFile Creates a new file, with the specified package name.
 func NewFile(packageName string) *File {
 	return &File{
-		Group: &Group{
-			multi: true,
-		},
+		Group:   &Group{multi: true},
 		name:    packageName,
 		imports: map[string]importdef{},
 		hints:   map[string]importdef{},
@@ -27,9 +30,7 @@ func NewFile(packageName string) *File {
 // package name is inferred from the path.
 func NewFilePath(packagePath string) *File {
 	return &File{
-		Group: &Group{
-			multi: true,
-		},
+		Group:   &Group{multi: true},
 		name:    guessAlias(packagePath),
 		path:    packagePath,
 		imports: map[string]importdef{},
@@ -40,9 +41,7 @@ func NewFilePath(packagePath string) *File {
 // NewFilePathName creates a new file with the specified package path and name.
 func NewFilePathName(packagePath, packageName string) *File {
 	return &File{
-		Group: &Group{
-			multi: true,
-		},
+		Group:   &Group{multi: true},
 		name:    packageName,
 		path:    packagePath,
 		imports: map[string]importdef{},
@@ -71,10 +70,8 @@ type File struct {
 	CanonicalPath string
 }
 
-// importdef is used to differentiate packages where we know the package name from packages where the
-// import is aliased. If alias == false, then name is the actual package name, and the import will be
-// rendered without an alias. If used == false, the import has not been used in code yet and should be
-// excluded from the import block.
+// importdef differentiates packages where we know the name from packages where
+// the import is aliased.
 type importdef struct {
 	name  string
 	alias bool
@@ -93,8 +90,8 @@ func (f *File) PackageComment(comment string) {
 	f.comments = append(f.comments, comment)
 }
 
-// CgoPreamble adds a cgo preamble comment that is rendered directly before the "C" pseudo-package
-// import.
+// CgoPreamble adds a cgo preamble comment that is rendered directly before the
+// "C" pseudo-package import.
 func (f *File) CgoPreamble(comment string) {
 	f.cgoPreamble = append(f.cgoPreamble, comment)
 }
@@ -106,23 +103,21 @@ func (f *File) Anon(paths ...string) {
 	}
 }
 
-// ImportName provides the package name for a path. If specified, the alias will be omitted from the
-// import block. This is optional. If not specified, a sensible package name is used based on the path
-// and this is added as an alias in the import block.
+// ImportName provides the package name for a path. If specified, the alias will
+// be omitted from the import block.
 func (f *File) ImportName(path, name string) {
 	f.hints[path] = importdef{name: name, alias: false}
 }
 
-// ImportNames allows multiple names to be imported as a map. Use the [gennames](gennames) command to
-// automatically generate a go file containing a map of a selection of package names.
+// ImportNames allows multiple names to be imported as a map.
 func (f *File) ImportNames(names map[string]string) {
 	for path, name := range names {
 		f.hints[path] = importdef{name: name, alias: false}
 	}
 }
 
-// ImportAlias provides the alias for a package path that should be used in the import block. A
-// period can be used to force a dot-import.
+// ImportAlias provides the alias for a package path that should be used in the
+// import block. A period can be used to force a dot-import.
 func (f *File) ImportAlias(path, alias string) {
 	f.hints[path] = importdef{name: alias, alias: true}
 }
@@ -132,15 +127,12 @@ func (f *File) isLocal(path string) bool {
 }
 
 func (f *File) isValidAlias(alias string) bool {
-	// multiple dot-imports are ok
 	if alias == "." {
 		return true
 	}
-	// the import alias is invalid if it's a reserved word
 	if IsReservedWord(alias) {
 		return false
 	}
-	// the import alias is invalid if it's already been registered
 	for _, v := range f.imports {
 		if alias == v.name {
 			return false
@@ -158,19 +150,16 @@ func (f *File) isDotImport(path string) bool {
 
 func (f *File) register(path string) string {
 	if f.isLocal(path) {
-		// notest
-		// should never get here because in Qual the packageToken will be null,
-		// so render will never be called.
 		return ""
 	}
 
-	// if the path has been registered previously, simply return the name
+	// already registered
 	def := f.imports[path]
 	if def.name != "" && def.name != "_" {
 		return def.name
 	}
 
-	// special case for "C" pseudo-package
+	// "C" pseudo-package
 	if path == "C" {
 		f.imports["C"] = importdef{name: "C", alias: false}
 		return "C"
@@ -180,41 +169,170 @@ func (f *File) register(path string) string {
 	var alias bool
 
 	if hint := f.hints[path]; hint.name != "" {
-		// look up the path in the list of provided package names and aliases by ImportName / ImportAlias
 		name = hint.name
 		alias = hint.alias
 	} else if standardLibraryHints[path] != "" {
-		// look up the path in the list of standard library packages
 		name = standardLibraryHints[path]
 		alias = false
 	} else {
-		// if a hint is not found for the package, guess the alias from the package path
 		name = guessAlias(path)
 		alias = true
 	}
 
-	// If the name is invalid or has been registered already, make it unique by appending a number
+	// make unique
 	unique := name
-	i := 0
-	for !f.isValidAlias(unique) {
+	for i := 0; !f.isValidAlias(unique); i++ {
 		i++
 		unique = fmt.Sprintf("%s%d", name, i)
-	}
-
-	// If we've changed the name to make it unique, it should definitely be an alias
-	if unique != name {
 		alias = true
 	}
 
-	// Only add a prefix if the name is an alias
 	if f.PackagePrefix != "" && alias {
 		unique = f.PackagePrefix + "_" + unique
 	}
 
-	// Register the eventual name
 	f.imports[path] = importdef{name: unique, alias: alias}
-
 	return unique
+}
+
+// Save renders the file and saves to the filename provided.
+func (f *File) Save(filename string) error {
+	buf := &bytes.Buffer{}
+	if err := f.Render(buf); err != nil {
+		return fmt.Errorf("saving %s: %w", filename, err)
+	}
+	if err := os.WriteFile(filename, buf.Bytes(), 0o644); err != nil {
+		return fmt.Errorf("writing %s: %w", filename, err)
+	}
+	return nil
+}
+
+// Render renders the file to the provided writer.
+func (f *File) Render(w io.Writer) error {
+	body := &bytes.Buffer{}
+	if err := f.render(f, body, nil); err != nil {
+		return fmt.Errorf("rendering body: %w", err)
+	}
+	source := &bytes.Buffer{}
+	if len(f.headers) > 0 {
+		for _, c := range f.headers {
+			if err := Comment(c).render(f, source, nil); err != nil {
+				return err
+			}
+			if _, err := fmt.Fprint(source, "\n"); err != nil {
+				return err
+			}
+		}
+		if _, err := fmt.Fprint(source, "\n"); err != nil {
+			return err
+		}
+	}
+	for _, c := range f.comments {
+		if err := Comment(c).render(f, source, nil); err != nil {
+			return err
+		}
+		if _, err := fmt.Fprint(source, "\n"); err != nil {
+			return err
+		}
+	}
+	if _, err := fmt.Fprintf(source, "package %s", f.name); err != nil {
+		return err
+	}
+	if f.CanonicalPath != "" {
+		if _, err := fmt.Fprintf(source, " // import %q", f.CanonicalPath); err != nil {
+			return err
+		}
+	}
+	if _, err := fmt.Fprint(source, "\n\n"); err != nil {
+		return err
+	}
+	if err := f.renderImports(source); err != nil {
+		return err
+	}
+	if _, err := source.Write(body.Bytes()); err != nil {
+		return err
+	}
+	var output []byte
+	if f.NoFormat {
+		output = source.Bytes()
+	} else {
+		var err error
+		output, err = format.Source(source.Bytes())
+		if err != nil {
+			return fmt.Errorf("formatting generated source: %w\n%s", err, numberLines(source.String()))
+		}
+	}
+	if _, err := w.Write(output); err != nil {
+		return err
+	}
+	return nil
+}
+
+func (f *File) renderImports(source io.Writer) error {
+	hasCgo := f.imports["C"].name != "" || len(f.cgoPreamble) > 0
+	separateCgo := hasCgo && len(f.cgoPreamble) > 0
+
+	filtered := map[string]importdef{}
+	for path, def := range f.imports {
+		if path == "C" && separateCgo {
+			continue
+		}
+		filtered[path] = def
+	}
+
+	if len(filtered) == 1 {
+		for path, def := range filtered {
+			if def.alias && path != "C" {
+				if _, err := fmt.Fprintf(source, "import %s %s\n\n", def.name, strconv.Quote(path)); err != nil {
+					return err
+				}
+			} else {
+				if _, err := fmt.Fprintf(source, "import %s\n\n", strconv.Quote(path)); err != nil {
+					return err
+				}
+			}
+		}
+	} else if len(filtered) > 1 {
+		if _, err := fmt.Fprint(source, "import (\n"); err != nil {
+			return err
+		}
+		paths := make([]string, 0, len(filtered))
+		for path := range filtered {
+			paths = append(paths, path)
+		}
+		slices.Sort(paths)
+		for _, path := range paths {
+			def := filtered[path]
+			if def.alias && path != "C" {
+				if _, err := fmt.Fprintf(source, "%s %s\n", def.name, strconv.Quote(path)); err != nil {
+					return err
+				}
+			} else {
+				if _, err := fmt.Fprintf(source, "%s\n", strconv.Quote(path)); err != nil {
+					return err
+				}
+			}
+		}
+		if _, err := fmt.Fprint(source, ")\n\n"); err != nil {
+			return err
+		}
+	}
+
+	if separateCgo {
+		for _, c := range f.cgoPreamble {
+			if err := Comment(c).render(f, source, nil); err != nil {
+				return err
+			}
+			if _, err := fmt.Fprint(source, "\n"); err != nil {
+				return err
+			}
+		}
+		if _, err := fmt.Fprint(source, "import \"C\"\n\n"); err != nil {
+			return err
+		}
+	}
+
+	return nil
 }
 
 // GoString renders the File for testing. Any error will cause a panic.
@@ -227,21 +345,15 @@ func (f *File) GoString() string {
 }
 
 func guessAlias(path string) string {
-	// training slashes are usually tolerated, so we can get rid of one if it exists
 	alias := strings.TrimSuffix(path, "/")
 	if strings.Contains(alias, "/") {
-		// if the path contains a "/", use the last part
 		alias = alias[strings.LastIndex(alias, "/")+1:]
 	}
-	// alias should be lower case
 	alias = strings.ToLower(alias)
-	// alias should now only contain alphanumerics
 	alias = nonAlphanumRegex.ReplaceAllString(alias, "")
-	// can't have a first digit, per Go identifier rules, so just skip them
 	for firstRune, runeLen := utf8.DecodeRuneInString(alias); unicode.IsDigit(firstRune); firstRune, runeLen = utf8.DecodeRuneInString(alias) {
 		alias = alias[runeLen:]
 	}
-	// If path part was all digits, we may be left with an empty string. In this case use "pkg" as the alias.
 	if alias == "" {
 		alias = "pkg"
 	}

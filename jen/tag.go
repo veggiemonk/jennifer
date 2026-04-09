@@ -3,30 +3,15 @@ package jen
 import (
 	"fmt"
 	"io"
-	"sort"
+	"slices"
 	"strconv"
 )
 
-// Tag renders a struct tag
-func Tag(items map[string]string) *Statement {
-	return newStatement().Tag(items)
-}
-
-// Tag renders a struct tag
-func (g *Group) Tag(items map[string]string) *Statement {
-	// notest
-	// don't think this can ever be used in valid code?
-	s := Tag(items)
-	g.items = append(g.items, s)
-	return s
-}
-
-// Tag renders a struct tag
+// Tag renders a struct tag.
+func Tag(items map[string]string) *Statement            { return newStatement().Tag(items) }
+func (g *Group) Tag(items map[string]string) *Statement { return g.item(Tag(items)) }
 func (s *Statement) Tag(items map[string]string) *Statement {
-	c := tag{
-		items: items,
-	}
-	*s = append(*s, c)
+	*s = append(*s, tag{items: items})
 	return s
 }
 
@@ -40,19 +25,16 @@ func (t tag) isNull(f *File) bool {
 
 func (t tag) render(f *File, w io.Writer, s *Statement) error {
 	if t.isNull(f) {
-		// notest
-		// render won't be called if t is null
 		return nil
 	}
 
-	var str string
-
-	var sorted []string
+	sorted := make([]string, 0, len(t.items))
 	for k := range t.items {
 		sorted = append(sorted, k)
 	}
-	sort.Strings(sorted)
+	slices.Sort(sorted)
 
+	var str string
 	for _, k := range sorted {
 		v := t.items[k]
 		if len(str) > 0 {
@@ -67,9 +49,6 @@ func (t tag) render(f *File, w io.Writer, s *Statement) error {
 		str = strconv.Quote(str)
 	}
 
-	if _, err := w.Write([]byte(str)); err != nil {
-		return err
-	}
-
-	return nil
+	_, err := w.Write([]byte(str))
+	return err
 }
