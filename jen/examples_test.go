@@ -808,7 +808,7 @@ func ExampleCall_fmt() {
 }
 
 func ExampleCallFunc() {
-	f := func(name string, second string) {
+	f := func(name, second string) {
 		c := ID("foo").CallFunc(func(g *Group) {
 			g.ID(name)
 			if second != "" {
@@ -1439,7 +1439,7 @@ func ExampleEmpty() {
 }
 
 func ExampleBlock_complex() {
-	collection := func(name string, key Code, value Code) *Statement {
+	collection := func(name string, key, value Code) *Statement {
 		if key == nil {
 			// slice
 			return Var().ID(name).Index().Add(value)

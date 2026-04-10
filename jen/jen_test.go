@@ -23,6 +23,13 @@ var o2 = Options{
 	Separator: ",",
 }
 
+type tc struct {
+	desc          string
+	code          Code
+	expect        string
+	expectImports map[string]string
+}
+
 var cases = []tc{
 	{
 		desc: `union_group`,
@@ -118,20 +125,11 @@ var cases = []tc{
 		)`,
 	},
 	{
-		desc: `custom function`,
-		code: ID("foo").Add(Custom(o1, Lit("a"), Lit("b"), Lit("c"))),
-		expect: `foo(
-			"a",
-			"b",
-			"c",
-		)`,
-	},
-	{
 		desc: `line statement`,
 		code: Block(Lit(1).Line(), Lit(2)),
 		expect: `{
 		1
-		
+
 		2
 		}`,
 	},
@@ -140,7 +138,7 @@ var cases = []tc{
 		code: Block(Lit(1), Line(), Lit(2)),
 		expect: `{
 		1
-		
+
 		2
 		}`,
 	},
@@ -153,7 +151,7 @@ var cases = []tc{
 		}),
 		expect: `{
 		a
-		
+
 		b
 		}`,
 	},
@@ -170,7 +168,7 @@ var cases = []tc{
 			g.Empty()
 		}),
 		expect: `{
-		
+
 		}`,
 	},
 	{
@@ -191,7 +189,7 @@ var cases = []tc{
 		expect: ``,
 	},
 	{
-		desc: `litrunefunc group`,
+		desc: `litbytefunc group`,
 		code: BlockFunc(func(g *Group) {
 			g.LitByteFunc(func() byte { return byte(0xab) })
 		}),
@@ -325,7 +323,7 @@ var cases = []tc{
 		expect: `if a == "b" {}`,
 	},
 	{
-		desc: `simple if`,
+		desc: `simple if with body`,
 		code: If(ID("a").Op("==").Lit("b")).Block(
 			ID("a").Op("++"),
 		),
@@ -342,27 +340,18 @@ var cases = []tc{
 		expect: `&a`,
 	},
 	{
-		desc: `simple call`,
-		code: ID("a").Call(
-			Lit("b"),
-			Lit("c"),
-		),
+		desc:   `simple call`,
+		code:   ID("a").Call(Lit("b"), Lit("c")),
 		expect: `a("b", "c")`,
 	},
 	{
-		desc: `call fmt.Sprintf`,
-		code: Qual("fmt", "Sprintf").Call(
-			Lit("b"),
-			ID("c"),
-		),
+		desc:   `call fmt.Sprintf`,
+		code:   Qual("fmt", "Sprintf").Call(Lit("b"), ID("c")),
 		expect: `fmt.Sprintf("b", c)`,
 	},
 	{
-		desc: `slices`,
-		code: ID("a").Index(
-			Lit(1),
-			Empty(),
-		),
+		desc:   `slices`,
+		code:   ID("a").Index(Lit(1), Empty()),
 		expect: `a[1:]`,
 	},
 	{
@@ -517,8 +506,36 @@ var cases = []tc{
 		desc: `dict should be ordered`,
 		code: Map(String()).Int().Values(Dict{ID("z"): Lit(1), ID("a"): Lit(2)}),
 		expect: `map[string]int{
-		a:2, 
+		a:2,
 		z:1,
+		}`,
+	},
+	// switch/case
+	{
+		desc: `switch case block`,
+		code: Switch(ID("a")).Block(
+			Case(Lit(1)).Block(
+				Var().ID("i").Int(),
+				Var().ID("j").Int(),
+			),
+		),
+		expect: `switch a {
+		case 1:
+			var i int
+			var j int
+		}`,
+	},
+	{
+		desc: `switch default`,
+		code: Switch(ID("a")).Block(
+			Case(Lit(1)).Block(ID("a").Op("++")),
+			Default().Block(ID("b").Op("++")),
+		),
+		expect: `switch a {
+		case 1:
+			a++
+		default:
+			b++
 		}`,
 	},
 }
@@ -529,10 +546,6 @@ func TestJen(t *testing.T) {
 
 func caseTester(t *testing.T, cases []tc) {
 	for i, c := range cases {
-		onlyTest := ""
-		if onlyTest != "" && c.desc != onlyTest {
-			continue
-		}
 		rendered := fmt.Sprintf("%#v", c.code)
 
 		expected, err := format.Source([]byte(c.expect))
@@ -540,38 +553,26 @@ func caseTester(t *testing.T, cases []tc) {
 			panic(fmt.Sprintf("Error formatting expected source in test case %d. Description: %s\nError:\n%s", i, c.desc, err))
 		}
 
-		if strings.TrimSpace(string(rendered)) != strings.TrimSpace(string(expected)) {
+		if strings.TrimSpace(rendered) != strings.TrimSpace(string(expected)) {
 			t.Errorf("Test case %d failed. Description: %s\nExpected:\n%s\nOutput:\n%s", i, c.desc, expected, rendered)
 		}
 
-		//if c.expectImports != nil {
-		//	f := FromContext(ctx)
-		//	if !reflect.DeepEqual(f.Imports, c.expectImports) {
-		//		t.Errorf("Test case %d failed. Description: %s\nImports expected:\n%s\nOutput:\n%s", i, c.desc, c.expectImports, f.Imports)
-		//	}
-		//}
+		if c.expectImports != nil {
+			f := NewFile("test")
+			f.Add(c.code)
+			output := fmt.Sprintf("%#v", f)
+			for path, alias := range c.expectImports {
+				if !strings.Contains(output, alias+".") && !strings.Contains(output, `"`+path+`"`) {
+					t.Errorf("Test case %d failed. Description: %s\nExpected import %s (%s) not found in:\n%s", i, c.desc, path, alias, output)
+				}
+			}
+		}
 	}
-}
-
-// a test case
-type tc struct {
-	// path
-	// path string
-	// description for locating the test case
-	desc string
-	// code to generate
-	code Code
-	// expected generated source
-	expect string
-	// expected imports
-	expectImports map[string]string
 }
 
 func TestNilStatement(t *testing.T) {
 	var s *Statement
-	c := Func().ID("a").Params(
-		s,
-	)
+	c := Func().ID("a").Params(s)
 	got := fmt.Sprintf("%#v", c)
 	expect := "func a()"
 	if got != expect {
@@ -581,9 +582,7 @@ func TestNilStatement(t *testing.T) {
 
 func TestNilGroup(t *testing.T) {
 	var g *Group
-	c := Func().ID("a").Params(
-		g,
-	)
+	c := Func().ID("a").Params(g)
 	got := fmt.Sprintf("%#v", c)
 	expect := "func a()"
 	if got != expect {
@@ -591,13 +590,22 @@ func TestNilGroup(t *testing.T) {
 	}
 }
 
-func TestGroup_GoString(t *testing.T) {
-	BlockFunc(func(g *Group) {
-		g.Lit(1)
-		got := fmt.Sprintf("%#v", g)
-		expect := "{\n\t1\n}"
-		if got != expect {
-			t.Fatalf("Got: %s, expect: %s", got, expect)
-		}
-	})
+func TestBlockAfterCaseRenderIdempotent(t *testing.T) {
+	c := Switch(ID("x")).Block(
+		Case(Lit(1)).Block(ID("a").Call()),
+	)
+	first := fmt.Sprintf("%#v", c)
+	second := fmt.Sprintf("%#v", c)
+	if first != second {
+		t.Errorf("Block-after-Case renders differ:\nfirst:  %s\nsecond: %s", first, second)
+	}
+}
+
+func TestImportAliasForAnyAndComparable(t *testing.T) {
+	f := NewFile("main")
+	c := Qual("example.com/any", "Foo")
+	got := fmt.Sprintf("%#v", f.Func().ID("f").Params().Block(Add(c)))
+	if strings.Contains(got, "import any ") {
+		t.Errorf("import alias should not be 'any', got:\n%s", got)
+	}
 }

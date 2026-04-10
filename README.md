@@ -45,7 +45,6 @@ in your PR.
 ### Examples
 Jennifer has a comprehensive suite of examples - see [godoc](https://godoc.org/github.com/veggiemonk/jennifer/jen#pkg-examples) for an index. Here's some examples of jennifer being used in the real-world:
 
-* [genjen](genjen/render.go) (which generates much of jennifer, using data in [data.go](genjen/data.go))
 * [zerogen](https://github.com/mrsinham/zerogen/blob/master/generator.go)
 * [go-contentful-generator](https://github.com/nicolai86/go-contentful-generator)
 
@@ -133,7 +132,7 @@ it is not possible to reliably determine the package name given an arbitrary
 package path, so a sensible name is guessed from the path and added as an
 alias. The names of all standard library packages are known so these do not
 need to be aliased. If more control is needed of the aliases, see
-[File.ImportName](#importname) or [File.ImportAlias](#importalias).
+[File.ImportName] or [File.ImportAlias].
 
 ### List
 List renders a comma separated list. Use for multiple return functions.
@@ -245,7 +244,9 @@ fmt.Printf("%#v", c)
 // }
 ```
 
-A special case applies when used directly after Case or Default, where the braces are omitted. This allows use in switch and select statements. [See example](#switch-select).
+
+A special case applies when used directly after Case or Default, where the braces
+are omitted. This allows use in switch and select statements. [See example](#switch-select).
 
 ### Interface, Struct
 Interface and Struct render the keyword followed by a statement list enclosed
@@ -502,8 +503,8 @@ fmt.Printf("%#v", c)
 // []string{"a", "b"}
 ```
 
-Dict renders as key/value pairs. Use with Values for map or composite
-literals.
+Dict renders as key/value pairs.
+Use with Values for map or composite literals.
 
 ```go
 c := Map(String()).String().Values(Dict{
@@ -802,7 +803,7 @@ fmt.Printf("%#v\n%#v", f("a", true), f("b", false))
 [Identifiers](#identifiers) [Keywords](#keywords) [Operators](#operators) [Braces](#braces) [Parentheses](#parentheses) [Control flow](#control-flow) [Collections](#collections) [Literals](#literals) [Comments](#comments) [Generics](#generics) [Helpers](#helpers) **Misc** [File](#file)
 
 ### Tag
-Tag renders a struct tag
+Tag renders a struct tag.
 
 ```go
 c := Type().ID("foo").Struct(
@@ -998,9 +999,8 @@ fmt.Printf("%#v", f)
 ```
 
 ### ImportName
-ImportName provides the package name for a path. If specified, the alias will be omitted from the
-import block. This is optional. If not specified, a sensible package name is used based on the path
-and this is added as an alias in the import block.
+ImportName provides the package name for a path. If specified, the alias will
+be omitted from the import block.
 
 ```go
 f := NewFile("main")
@@ -1027,12 +1027,11 @@ fmt.Printf("%#v", f)
 ```
 
 ### ImportNames
-ImportNames allows multiple names to be imported as a map. Use the [gennames](gennames) command to
-automatically generate a go file containing a map of a selection of package names.
+ImportNames allows multiple names to be imported as a map.
 
 ### ImportAlias
-ImportAlias provides the alias for a package path that should be used in the import block. A
-period can be used to force a dot-import.
+ImportAlias provides the alias for a package path that should be used in the
+import block. A period can be used to force a dot-import.
 
 ```go
 f := NewFile("main")
@@ -1084,8 +1083,8 @@ fmt.Printf("%#v", f)
 // func init() {}
 ```
 
-CgoPreamble adds a cgo preamble comment that is rendered directly before the "C" pseudo-package
-import.
+CgoPreamble adds a cgo preamble comment that is rendered directly before the
+"C" pseudo-package import.
 
 ### PackagePrefix
 If you're worried about generated package aliases conflicting with local variable names, you

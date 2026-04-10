@@ -3,30 +3,29 @@ package jen
 import (
 	"bytes"
 	"io"
-	"sort"
+	"slices"
 )
 
-// Dict renders as key/value pairs. Use with Values for map or composite
-// literals.
+// Dict renders as key/value pairs.
+// Use with Values for map or composite literals.
 type Dict map[Code]Code
 
-// DictFunc executes a func(Dict) to generate the value. Use with Values for
-// map or composite literals.
+// DictFunc executes a func(Dict) to generate the value.
+// Use with Values for map or composite literals.
 func DictFunc(f func(Dict)) Dict {
 	d := Dict{}
 	f(d)
 	return d
 }
 
-func (d Dict) render(f *File, w io.Writer, s *Statement) error {
+func (d Dict) render(f *File, w io.Writer, _ *Statement) error {
 	first := true
-	// must order keys to ensure repeatable source
 	type kv struct {
 		k Code
 		v Code
 	}
 	lookup := map[string]kv{}
-	keys := []string{}
+	keys := make([]string, 0, len(d))
 	for k, v := range d {
 		if k.isNull(f) || v.isNull(f) {
 			continue
@@ -35,15 +34,16 @@ func (d Dict) render(f *File, w io.Writer, s *Statement) error {
 		if err := k.render(f, buf, nil); err != nil {
 			return err
 		}
-		keys = append(keys, buf.String())
-		lookup[buf.String()] = kv{k: k, v: v}
+		key := buf.String()
+		keys = append(keys, key)
+		lookup[key] = kv{k: k, v: v}
 	}
-	sort.Strings(keys)
+	slices.Sort(keys)
 	for _, key := range keys {
 		k := lookup[key].k
 		v := lookup[key].v
 		if first && len(keys) > 1 {
-			if _, err := w.Write([]byte("\n")); err != nil {
+			if _, err := w.Write(newLine); err != nil {
 				return err
 			}
 			first = false
@@ -58,7 +58,7 @@ func (d Dict) render(f *File, w io.Writer, s *Statement) error {
 			return err
 		}
 		if len(keys) > 1 {
-			if _, err := w.Write([]byte(",\n")); err != nil {
+			if _, err := w.Write(newLine); err != nil {
 				return err
 			}
 		}
@@ -72,8 +72,6 @@ func (d Dict) isNull(f *File) bool {
 	}
 	for k, v := range d {
 		if !k.isNull(f) && !v.isNull(f) {
-			// if any of the key/value pairs are both not null, the Dict is not
-			// null
 			return false
 		}
 	}

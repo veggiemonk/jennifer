@@ -33,7 +33,6 @@ in your PR.
 ### Examples
 Jennifer has a comprehensive suite of examples - see [godoc](https://godoc.org/github.com/veggiemonk/jennifer/jen#pkg-examples) for an index. Here's some examples of jennifer being used in the real-world:
 
-* [genjen](genjen/render.go) (which generates much of jennifer, using data in [data.go](genjen/data.go))
 * [zerogen](https://github.com/mrsinham/zerogen/blob/master/generator.go)
 * [go-contentful-generator](https://github.com/nicolai86/go-contentful-generator)
 

@@ -4,7 +4,6 @@ go 1.26.1
 
 tool (
 	github.com/dave/rebecca/cmd/becca
-	github.com/veggiemonk/jennifer/genjen
 	github.com/veggiemonk/jennifer/gennames
 )
 
