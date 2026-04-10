@@ -2,6 +2,8 @@ module github.com/veggiemonk/jennifer
 
 go 1.26.2
 
+retract v1.26.2 // Dict rendering missing trailing commas in multi-entry map literals
+
 tool (
 	github.com/dave/rebecca/cmd/becca
 	github.com/veggiemonk/jennifer/gennames
