@@ -6,6 +6,7 @@ import (
 	"go/format"
 	"io"
 	"os"
+	"path"
 	"regexp"
 	"slices"
 	"strconv"
@@ -270,15 +271,17 @@ func (f *File) Render(w io.Writer) error {
 }
 
 func (f *File) renderImports(source io.Writer) error {
-	hasCgo := f.imports["C"].name != "" || len(f.cgoPreamble) > 0
-	separateCgo := hasCgo && len(f.cgoPreamble) > 0
+	separateCgo := len(f.cgoPreamble) > 0
 
-	filtered := map[string]importdef{}
-	for path, def := range f.imports {
-		if path == "C" && separateCgo {
-			continue
+	filtered := f.imports
+	if separateCgo {
+		filtered = make(map[string]importdef, len(f.imports)-1)
+		for path, def := range f.imports {
+			if path == "C" {
+				continue
+			}
+			filtered[path] = def
 		}
-		filtered[path] = def
 	}
 
 	if len(filtered) == 1 {
@@ -345,12 +348,8 @@ func (f *File) GoString() string {
 	return buf.String()
 }
 
-func guessAlias(path string) string {
-	alias := strings.TrimSuffix(path, "/")
-	if strings.Contains(alias, "/") {
-		alias = alias[strings.LastIndex(alias, "/")+1:]
-	}
-	alias = strings.ToLower(alias)
+func guessAlias(p string) string {
+	alias := strings.ToLower(path.Base(p))
 	alias = nonAlphanumRegex.ReplaceAllString(alias, "")
 	for firstRune, runeLen := utf8.DecodeRuneInString(alias); unicode.IsDigit(firstRune); firstRune, runeLen = utf8.DecodeRuneInString(alias) {
 		alias = alias[runeLen:]

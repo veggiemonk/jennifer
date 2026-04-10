@@ -94,14 +94,11 @@ func (q qualToken) isNull(f *File) bool {
 }
 
 func (q qualToken) render(f *File, w io.Writer, s *Statement) error {
-	// Always register the import, even for dot-imports and local packages,
-	// so the import block is populated correctly.
-	f.register(q.path)
+	alias := f.register(q.path)
 	if f.isDotImport(q.path) || f.isLocal(q.path) {
 		_, err := w.Write([]byte(q.name))
 		return err
 	}
-	alias := f.register(q.path)
 	_, err := fmt.Fprintf(w, "%s.%s", alias, q.name)
 	return err
 }
