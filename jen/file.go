@@ -340,7 +340,7 @@ func (f *File) renderImports(source io.Writer) error {
 func (f *File) GoString() string {
 	buf := &bytes.Buffer{}
 	if err := f.Render(buf); err != nil {
-		panic(err)
+		panic(fmt.Errorf("jennifer: File.GoString render error: %w", err))
 	}
 	return buf.String()
 }

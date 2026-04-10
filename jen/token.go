@@ -51,7 +51,7 @@ func (t token) render(f *File, w io.Writer, s *Statement) error {
 		case complex64:
 			out = fmt.Sprintf("%T%#v", t.content, t.content)
 		default:
-			panic(fmt.Sprintf("unsupported type for literal: %T", t.content))
+			return fmt.Errorf("unsupported type for Lit: %T (value: %v)", t.content, t.content)
 		}
 		if _, err := w.Write([]byte(out)); err != nil {
 			return err

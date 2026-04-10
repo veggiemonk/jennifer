@@ -42,18 +42,18 @@ func (g *Group) render(f *File, w io.Writer, s *Statement) error {
 		// Special case for types - if all items are null, don't render the open/close tokens.
 		return nil
 	}
-	open := g.open
+	openTok := g.open
 	closeTok := g.close
 	if g.name == "block" && s != nil {
 		// When a block follows a Case or Default group, omit braces (switch/select syntax).
 		prev := s.previous(g)
 		if grp, ok := prev.(*Group); ok && (grp.name == "case" || grp.name == "default") {
-			open = ""
+			openTok = ""
 			closeTok = ""
 		}
 	}
-	if open != "" {
-		if _, err := w.Write([]byte(open)); err != nil {
+	if openTok != "" {
+		if _, err := w.Write([]byte(openTok)); err != nil {
 			return err
 		}
 	}
@@ -83,13 +83,13 @@ func (g *Group) render(f *File, w io.Writer, s *Statement) error {
 
 func (g *Group) renderItems(f *File, w io.Writer) (isNull bool, err error) {
 	first := true
-	for _, code := range g.items {
+	for i, code := range g.items {
 		if code == nil || code.isNull(f) {
 			continue
 		}
 		if g.name == "values" {
 			if _, ok := code.(Dict); ok && len(g.items) > 1 {
-				panic("Error in Values: if Dict is used, must be one item only")
+				return false, fmt.Errorf("Values: when using Dict, it must be the only item (got %d items)", len(g.items))
 			}
 		}
 		if !first && g.separator != "" {
@@ -103,7 +103,7 @@ func (g *Group) renderItems(f *File, w io.Writer) (isNull bool, err error) {
 			}
 		}
 		if err := code.render(f, w, nil); err != nil {
-			return false, err
+			return false, fmt.Errorf("rendering %s item %d (%T): %w", g.name, i, code, err)
 		}
 		first = false
 	}
@@ -119,7 +119,7 @@ func (g *Group) Render(writer io.Writer) error {
 func (g *Group) GoString() string {
 	buf := bytes.Buffer{}
 	if err := g.Render(&buf); err != nil {
-		panic(err)
+		panic(fmt.Errorf("jennifer: Group.GoString render error: %w\npartial output: %s", err, buf.String()))
 	}
 	return buf.String()
 }

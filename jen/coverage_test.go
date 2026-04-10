@@ -115,30 +115,63 @@ func TestFileRenderError(t *testing.T) {
 	}
 }
 
-func TestLitPanicOnUnsupportedType(t *testing.T) {
+func TestLitUnsupportedTypeReturnsError(t *testing.T) {
+	s := Lit(struct{}{})
+	buf := &bytes.Buffer{}
+	err := s.Render(buf)
+	if err == nil {
+		t.Fatal("expected error for unsupported Lit type")
+	}
+	if !strings.Contains(err.Error(), "unsupported type for Lit") {
+		t.Errorf("error should mention unsupported type, got: %s", err)
+	}
+}
+
+func TestDictValuesMultipleItemsReturnsError(t *testing.T) {
+	s := Values(Dict{ID("a"): Lit(1)}, Lit(2))
+	buf := &bytes.Buffer{}
+	err := s.Render(buf)
+	if err == nil {
+		t.Fatal("expected error for Dict with multiple items in Values")
+	}
+	if !strings.Contains(err.Error(), "Values") {
+		t.Errorf("error should mention Values, got: %s", err)
+	}
+}
+
+func TestErrorContextIncludesPosition(t *testing.T) {
+	// An error deep in the tree should include context about where it occurred
+	s := Func().ID("foo").Params().Block(
+		ID("x").Op(":=").Lit(struct{}{}), // unsupported Lit
+	)
+	buf := &bytes.Buffer{}
+	err := s.Render(buf)
+	if err == nil {
+		t.Fatal("expected error")
+	}
+	// The error chain should mention "statement item" and "unsupported type"
+	errMsg := err.Error()
+	if !strings.Contains(errMsg, "unsupported type for Lit") {
+		t.Errorf("error should include root cause, got: %s", errMsg)
+	}
+}
+
+func TestGoStringPanicIncludesContext(t *testing.T) {
 	defer func() {
 		r := recover()
 		if r == nil {
-			t.Error("expected panic for unsupported Lit type")
+			t.Fatal("expected panic from GoString")
+		}
+		msg := fmt.Sprint(r)
+		if !strings.Contains(msg, "jennifer:") {
+			t.Errorf("panic message should include 'jennifer:' prefix, got: %s", msg)
+		}
+		if !strings.Contains(msg, "unsupported type for Lit") {
+			t.Errorf("panic message should include root cause, got: %s", msg)
 		}
 	}()
 	s := Lit(struct{}{})
-	// GoString panics on render error, but Lit panics directly for unsupported types.
-	// Use Render to trigger the render path.
-	buf := &bytes.Buffer{}
-	_ = s.Render(buf)
-}
-
-func TestDictValuesPanicOnMultipleItems(t *testing.T) {
-	defer func() {
-		r := recover()
-		if r == nil {
-			t.Error("expected panic for Dict with multiple items in Values")
-		}
-	}()
-	s := Values(Dict{ID("a"): Lit(1)}, Lit(2))
-	buf := &bytes.Buffer{}
-	_ = s.Render(buf)
+	_ = s.GoString() // call directly, not via %#v (fmt catches panics)
 }
 
 func TestFileCanonicalPath(t *testing.T) {

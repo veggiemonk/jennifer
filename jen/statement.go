@@ -51,7 +51,7 @@ func (s *Statement) isNull(f *File) bool {
 
 func (s *Statement) render(f *File, w io.Writer, _ *Statement) error {
 	first := true
-	for _, code := range *s {
+	for i, code := range *s {
 		if code == nil || code.isNull(f) {
 			continue
 		}
@@ -61,7 +61,7 @@ func (s *Statement) render(f *File, w io.Writer, _ *Statement) error {
 			}
 		}
 		if err := code.render(f, w, s); err != nil {
-			return err
+			return fmt.Errorf("rendering statement item %d (%T): %w", i, code, err)
 		}
 		first = false
 	}
@@ -77,7 +77,7 @@ func (s *Statement) Render(writer io.Writer) error {
 func (s *Statement) GoString() string {
 	buf := bytes.Buffer{}
 	if err := s.Render(&buf); err != nil {
-		panic(err)
+		panic(fmt.Errorf("jennifer: Statement.GoString render error: %w\npartial output: %s", err, buf.String()))
 	}
 	return buf.String()
 }
