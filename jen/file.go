@@ -7,6 +7,7 @@ import (
 	"io"
 	"os"
 	"path"
+	"path/filepath"
 	"regexp"
 	"slices"
 	"strconv"
@@ -203,7 +204,7 @@ func (f *File) Save(filename string) error {
 	if err := f.Render(buf); err != nil {
 		return fmt.Errorf("saving %s: %w", filename, err)
 	}
-	if err := os.WriteFile(filename, buf.Bytes(), 0o644); err != nil {
+	if err := os.WriteFile(filepath.Clean(filename), buf.Bytes(), 0o644); err != nil {
 		return fmt.Errorf("writing %s: %w", filename, err)
 	}
 	return nil

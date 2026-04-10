@@ -18,7 +18,7 @@ func DictFunc(f func(Dict)) Dict {
 	return d
 }
 
-func (d Dict) render(f *File, w io.Writer, s *Statement) error {
+func (d Dict) render(f *File, w io.Writer, _ *Statement) error {
 	first := true
 	type kv struct {
 		k Code
