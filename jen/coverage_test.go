@@ -248,6 +248,43 @@ func TestQualLocalPackage(t *testing.T) {
 	}
 }
 
+// TestMultiLineGroupNoSpuriousComma verifies that multi-line groups only
+// insert newlines between items, not commas. Regression test for a bug where
+// renderItems wrote ",\n" instead of "\n", corrupting blocks, structs, etc.
+func TestMultiLineGroupNoSpuriousComma(t *testing.T) {
+	// Block (multi=true, no separator) — must not inject commas
+	block := Func().ID("f").Params().Block(
+		ID("a").Op("++"),
+		ID("b").Op("++"),
+	)
+	got := fmt.Sprintf("%#v", block)
+	if strings.Contains(got, ",") {
+		t.Errorf("block body should not contain commas, got:\n%s", got)
+	}
+
+	// Struct (multi=true, no separator) — must not inject commas
+	st := Type().ID("S").Struct(
+		ID("X").Int(),
+		ID("Y").Int(),
+	)
+	got = fmt.Sprintf("%#v", st)
+	if strings.Contains(got, ",") {
+		t.Errorf("struct body should not contain commas, got:\n%s", got)
+	}
+
+	// Custom multi-line with comma separator — no double commas
+	c := ID("foo").Add(Custom(Options{
+		Open:      "(",
+		Close:     ")",
+		Separator: ",",
+		Multi:     true,
+	}, Lit("a"), Lit("b"), Lit("c")))
+	got = fmt.Sprintf("%#v", c)
+	if strings.Contains(got, ",,") {
+		t.Errorf("custom multi should not have double commas, got:\n%s", got)
+	}
+}
+
 func TestTypesNullRendersNothing(t *testing.T) {
 	c := Func().ID("F").Types().Params().Block()
 	got := fmt.Sprintf("%#v", c)

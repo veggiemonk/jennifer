@@ -58,7 +58,7 @@ func (d Dict) render(f *File, w io.Writer, _ *Statement) error {
 			return err
 		}
 		if len(keys) > 1 {
-			if _, err := w.Write(newLine); err != nil {
+			if _, err := w.Write([]byte(",\n")); err != nil {
 				return err
 			}
 		}
