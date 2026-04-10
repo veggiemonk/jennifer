@@ -10,3 +10,5 @@ type Code interface {
 	render(f *File, w io.Writer, s *Statement) error
 	isNull(f *File) bool
 }
+
+var newLine = []byte("\n")

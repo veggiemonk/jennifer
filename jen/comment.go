@@ -53,7 +53,7 @@ func (c comment) render(f *File, w io.Writer, s *Statement) error {
 	}
 	if strings.Contains(c.comment, "\n") {
 		if !strings.HasSuffix(c.comment, "\n") {
-			if _, err := w.Write([]byte("\n")); err != nil {
+			if _, err := w.Write(newLine); err != nil {
 				return err
 			}
 		}

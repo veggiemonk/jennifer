@@ -43,7 +43,7 @@ func (d Dict) render(f *File, w io.Writer, s *Statement) error {
 		k := lookup[key].k
 		v := lookup[key].v
 		if first && len(keys) > 1 {
-			if _, err := w.Write([]byte("\n")); err != nil {
+			if _, err := w.Write(newLine); err != nil {
 				return err
 			}
 			first = false
@@ -58,7 +58,7 @@ func (d Dict) render(f *File, w io.Writer, s *Statement) error {
 			return err
 		}
 		if len(keys) > 1 {
-			if _, err := w.Write([]byte(",\n")); err != nil {
+			if _, err := w.Write(newLine); err != nil {
 				return err
 			}
 		}

@@ -98,7 +98,7 @@ func (g *Group) renderItems(f *File, w io.Writer) (isNull bool, err error) {
 			}
 		}
 		if g.multi {
-			if _, err := w.Write([]byte("\n")); err != nil {
+			if _, err := w.Write(newLine); err != nil {
 				return false, err
 			}
 		}
